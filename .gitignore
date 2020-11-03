@@ -1,0 +1,10 @@
+# Default ignored files
+/shelf/
+.idea/
+out/
+
+build.xml
+
+compilers-project-2020-public.iml
+
+examples/examples.iml
