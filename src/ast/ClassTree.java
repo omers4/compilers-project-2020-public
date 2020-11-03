@@ -50,8 +50,28 @@ public class ClassTree implements IClassTree {
         return parent;
     }
 
-    @Override
-    public void renameMethodNameInSubtree(String oldName, String newName) {
+    public ClassTree getClassTree(ClassDecl classDecl) {
+        if (data == classDecl) {
+            return this;
+        }
+        for (ClassTree child: children) {
+            ClassTree childSearch = child.getClassTree(classDecl);
+            if (childSearch != null) {
+                return childSearch;
+            }
+        }
+        return null;
+    }
 
+    @Override
+    public void renameMethodNameInSubtree(String originalName, String newName) {
+        for (MethodDecl method: data.methoddecls()) {
+            if (method.name().equals(originalName)) {
+                method.setName(newName);
+            }
+        }
+        for (ClassTree child: children) {
+            child.renameMethodNameInSubtree(originalName, newName);
+        }
     }
 }
