@@ -1,7 +1,6 @@
 package ast;
 
-public class AstRenameVisitor  implements Visitor {
-
+public class AstMethodRenameVisitor extends AstProgChanger {
     private StringBuilder builder = new StringBuilder();
     private Program newTree;
 
@@ -321,3 +320,4 @@ public class AstRenameVisitor  implements Visitor {
         builder.append(t.id());
     }
 }
+
