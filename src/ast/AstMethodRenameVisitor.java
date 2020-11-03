@@ -2,12 +2,16 @@ package ast;
 
 public class AstMethodRenameVisitor implements Visitor {
     private StringBuilder builder = new StringBuilder();
-    private Program newTree;
-
     private int indent = 0;
 
-    public Program getChangedAst() {
-        return newTree;
+    private String originalName;
+    private String originalLine;
+    private String newName;
+
+    public AstMethodRenameVisitor(String originalName, String originalLine, String newName) {
+        this.originalLine = originalLine;
+        this.originalName = originalName;
+        this.newName = newName;
     }
 
     private void appendWithIndent(String str) {
