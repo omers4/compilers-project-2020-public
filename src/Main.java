@@ -39,7 +39,7 @@ public class Main {
                 } else if (action.equals("rename")) {
                     var type = args[2];
                     var originalName = args[3];
-                    var originalLine = args[4];
+                    var originalLine = Integer.parseInt(args[4]);
                     var newName = args[5];
 
                     boolean isMethod;
@@ -54,11 +54,15 @@ public class Main {
                     Visitor astChanger;
 
                     if (isMethod) {
-                        astChanger = new AstMethodRenameVisitor(originalName, originalLine, newName);
+                        var hierarchy = new ClassHierarchyForest(prog);
+                        // We first rename the calls and only then the signatures
+                        var predecessor = hierarchy.getHighestClassTreeByMethod(originalLine);
+                        astChanger = new AstMethodCallsRenameVisitor(hierarchy, predecessor,
+                                originalName, originalLine, newName);
+                        predecessor.renameMethodNameInSubtree(originalName, newName);
                     } else {
                         astChanger = new AstFieldRenameVisitor(originalName, originalLine, newName);
                     }
-
                     astChanger.visit(prog);
                     PrintProgram(prog, outFile);
 

@@ -5,10 +5,10 @@ public class AstFieldRenameVisitor implements Visitor {
     private StringBuilder builder = new StringBuilder();
     private int indent = 0;
     private String originalName;
-    private String originalLine;
+    private int originalLine;
     private String newName;
 
-    public AstFieldRenameVisitor(String originalName, String originalLine, String newName) {
+    public AstFieldRenameVisitor(String originalName, int originalLine, String newName) {
             this.originalLine = originalLine;
             this.originalName = originalName;
             this.newName = newName;
