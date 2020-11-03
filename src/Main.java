@@ -28,9 +28,7 @@ public class Main {
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
                     xmlSerializer.serialize(prog, outfilename);
                 } else if (action.equals("print")) {
-                    AstPrintVisitor astPrinter = new AstPrintVisitor();
-                    astPrinter.visit(prog);
-                    outFile.write(astPrinter.getString());
+                    PrintProgram(prog, outFile);
 
                 } else if (action.equals("semantic")) {
                     throw new UnsupportedOperationException("TODO - Ex. 3");
@@ -53,7 +51,18 @@ public class Main {
                         throw new IllegalArgumentException("unknown rename type " + type);
                     }
 
-                    throw new UnsupportedOperationException("TODO - Ex. 1");
+                    AstProgChanger astChanger;
+
+                    if (isMethod)
+                        astChanger = new AstMethodRenameVisitor();
+
+                    else
+                        astChanger = new AstFieldRenameVisitor();
+
+                    astChanger.visit(prog);
+                    Program newProg = astChanger.getChangedAst();
+
+                    PrintProgram(newProg,outFile);
 
                 } else {
                     throw new IllegalArgumentException("unknown command line action " + action);
@@ -70,5 +79,11 @@ public class Main {
             System.out.println("General error: " + e);
             e.printStackTrace();
         }
+    }
+
+    public static void PrintProgram(Program node, PrintWriter outFile) {
+        var astPrinter = new AstPrintVisitor();
+        astPrinter.visit(node);
+        outFile.write(astPrinter.getString());
     }
 }

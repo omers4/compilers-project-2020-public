@@ -1,13 +1,13 @@
 package ast;
 
-public class AstRenameVisitor  implements Visitor {
-
+public class AstMethodRenameVisitor extends AstProgChanger {
     private StringBuilder builder = new StringBuilder();
+    private Program newTree;
 
     private int indent = 0;
 
-    public String getString() {
-        return builder.toString();
+    public Program getChangedAst() {
+        return newTree;
     }
 
     private void appendWithIndent(String str) {
@@ -320,3 +320,4 @@ public class AstRenameVisitor  implements Visitor {
         builder.append(t.id());
     }
 }
+
