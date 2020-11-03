@@ -6,4 +6,5 @@ public interface IASTUtils {
     MethodDecl getVariableMethodFromLineNumber(int lineNumber);
     MethodDecl getMethodFromLineNumber(int lineNumber);
     ClassDecl getClassFromLineNumber(int lineNumber);
+    ClassDecl getClassFromName(String name);
 }
