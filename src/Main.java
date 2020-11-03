@@ -53,7 +53,13 @@ public class Main {
                         throw new IllegalArgumentException("unknown rename type " + type);
                     }
 
-                    throw new UnsupportedOperationException("TODO - Ex. 1");
+                    var astRenamer = new AstRenameVisitor();
+                    var astPrinter = new AstPrintVisitor();
+
+                    astRenamer.visit(prog);
+                    Program newTree = astRenamer.getChangedAst();
+                    astPrinter.visit(newTree);
+                    outFile.write(astPrinter.getString());
 
                 } else {
                     throw new IllegalArgumentException("unknown command line action " + action);
