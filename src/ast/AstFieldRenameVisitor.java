@@ -1,6 +1,6 @@
 package ast;
 
-public class AstFieldRenameVisitor extends AstProgChanger {
+public class AstFieldRenameVisitor implements Visitor {
 
     private StringBuilder builder = new StringBuilder();
     private Program newTree;

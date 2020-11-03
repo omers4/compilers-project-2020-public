@@ -51,18 +51,16 @@ public class Main {
                         throw new IllegalArgumentException("unknown rename type " + type);
                     }
 
-                    AstProgChanger astChanger;
+                    Visitor astChanger;
 
-                    if (isMethod)
+                    if (isMethod) {
                         astChanger = new AstMethodRenameVisitor();
-
-                    else
+                    } else {
                         astChanger = new AstFieldRenameVisitor();
+                    }
 
                     astChanger.visit(prog);
-                    Program newProg = astChanger.getChangedAst();
-
-                    PrintProgram(newProg,outFile);
+                    PrintProgram(prog, outFile);
 
                 } else {
                     throw new IllegalArgumentException("unknown command line action " + action);
