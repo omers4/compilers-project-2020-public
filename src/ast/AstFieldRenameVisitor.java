@@ -124,11 +124,9 @@ public class AstFieldRenameVisitor implements Visitor {
 
     @Override
     public void visit(VarDecl varDecl) {
-        appendWithIndent("");
+        if (varDecl.lineNumber == Integer.parseInt(this.originalLine))
+            varDecl.setName(this.newName);
         varDecl.type().accept(this);
-        builder.append(" ");
-        builder.append(varDecl.name());
-        builder.append(";\n");
     }
 
     @Override
