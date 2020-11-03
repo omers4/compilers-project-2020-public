@@ -3,12 +3,15 @@ package ast;
 public class AstFieldRenameVisitor implements Visitor {
 
     private StringBuilder builder = new StringBuilder();
-    private Program newTree;
-
     private int indent = 0;
+    private String originalName;
+    private String originalLine;
+    private String newName;
 
-    public Program getChangedAst() {
-        return newTree;
+    public AstFieldRenameVisitor(String originalName, String originalLine, String newName) {
+            this.originalLine = originalLine;
+            this.originalName = originalName;
+            this.newName = newName;
     }
 
     private void appendWithIndent(String str) {
@@ -202,12 +205,14 @@ public class AstFieldRenameVisitor implements Visitor {
 
     @Override
     public void visit(LtExpr e) {
-        visitBinaryExpr(e, "<");;
+        visitBinaryExpr(e, "<");
+        ;
     }
 
     @Override
     public void visit(AddExpr e) {
-        visitBinaryExpr(e, "+");;
+        visitBinaryExpr(e, "+");
+        ;
     }
 
     @Override

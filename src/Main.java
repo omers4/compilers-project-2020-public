@@ -54,9 +54,9 @@ public class Main {
                     Visitor astChanger;
 
                     if (isMethod) {
-                        astChanger = new AstMethodRenameVisitor();
+                        astChanger = new AstMethodRenameVisitor(originalName, originalLine, newName);
                     } else {
-                        astChanger = new AstFieldRenameVisitor();
+                        astChanger = new AstFieldRenameVisitor(originalName, originalLine, newName);
                     }
 
                     astChanger.visit(prog);
