@@ -1,16 +1,30 @@
 package ast;
 
-public class AstMethodRenameVisitor implements Visitor {
+/*
+* The target of this class is to rename the *calls* to a method "foo" to a call on the method "bar".
+* There are 3 such cases-
+* 1. new B().foo();
+* 2. this.foo();
+* 3. B b; ....; b.foo();
+* */
+public class AstMethodCallsRenameVisitor implements Visitor {
     private StringBuilder builder = new StringBuilder();
     private int indent = 0;
 
+    // Used for understanding if, for example, B is a subclass of A.
+    private ClassHierarchyForest classHierarchy;
+    // Used to represent the predecessor of the class of the one the original function we are trying to change
+    private ClassTree predecessor;
     private String originalName;
-    private String originalLine;
+    private int originalLine;
     private String newName;
 
-    public AstMethodRenameVisitor(String originalName, String originalLine, String newName) {
-        this.originalLine = originalLine;
+    public AstMethodCallsRenameVisitor(ClassHierarchyForest classHierarchy, ClassTree predecessor,
+                                       String originalName, int originalLine, String newName) {
+        this.classHierarchy = classHierarchy;
+        this.predecessor = predecessor;
         this.originalName = originalName;
+        this.originalLine = originalLine;
         this.newName = newName;
     }
 

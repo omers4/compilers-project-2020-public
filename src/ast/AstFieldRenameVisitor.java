@@ -5,14 +5,13 @@ public class AstFieldRenameVisitor implements Visitor {
     private StringBuilder builder = new StringBuilder();
     private int indent = 0;
     private String originalName;
-    private String originalLine;
+    private int originalLine;
     private String newName;
-    private Boolean insideLocalScope = false;
 
-    public AstFieldRenameVisitor(String originalName, String originalLine, String newName) {
-        this.originalLine = originalLine;
-        this.originalName = originalName;
-        this.newName = newName;
+    public AstFieldRenameVisitor(String originalName, int originalLine, String newName) {
+            this.originalLine = originalLine;
+            this.originalName = originalName;
+            this.newName = newName;
     }
 
     private void appendWithIndent(String str) {
@@ -125,11 +124,11 @@ public class AstFieldRenameVisitor implements Visitor {
 
     @Override
     public void visit(VarDecl varDecl) {
-        if (varDecl.lineNumber == Integer.parseInt(this.originalLine)) {
-            varDecl.setName(this.newName);
-            insideLocalScope = true;
-        }
+        appendWithIndent("");
         varDecl.type().accept(this);
+        builder.append(" ");
+        builder.append(varDecl.name());
+        builder.append(";\n");
     }
 
     @Override

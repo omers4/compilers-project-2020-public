@@ -49,4 +49,13 @@ public class ClassDecl extends AstNode {
     public List<MethodDecl> methoddecls() {
         return methoddecls;
     }
+
+    boolean hasMethod(String name) {
+        for (var method : methoddecls) {
+            if (name.equals(method.name())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
