@@ -1,6 +1,6 @@
 package ast;
 
-public class AstMethodRenameVisitor extends AstProgChanger {
+public class AstMethodRenameVisitor implements Visitor {
     private StringBuilder builder = new StringBuilder();
     private Program newTree;
 
