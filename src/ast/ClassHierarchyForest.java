@@ -1,6 +1,7 @@
 package ast;
-
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ClassHierarchyForest implements IClassHierarchyForest {
     private Program program;
@@ -14,10 +15,39 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
         initForest();
     }
 
+    private ClassTree getClassTreeByNameFromForest(List<ClassTree> forest, String name) {
+        ClassDecl methodOwnerClass = astUtils.getClassFromName(name);
+        ClassTree methodOwnerClassTree = null;
+        for(ClassTree tree : forest) {
+            methodOwnerClassTree = tree.getClassTree(methodOwnerClass);
+            if (methodOwnerClassTree != null) {
+                break;
+            }
+        }
+        return methodOwnerClassTree;
+    }
+
     private void initForest() {
+        var tempForest = new LinkedList<ClassTree>();
+
         for (ClassDecl classDecl : program.classDecls()) {
-            // TODO parse the inheritance relationships. for now put it all in a forest
-            trees.add(new ClassTree(classDecl));
+            tempForest.add(new ClassTree(classDecl));
+        }
+
+        ClassTree tree;
+        while (!tempForest.isEmpty()) {
+            tree = tempForest.pop();
+            String superName = tree.getClassDecl().superName();
+            if (superName != null) {
+                ClassTree parentTree = getClassTreeByNameFromForest(tempForest, superName);
+                if (parentTree != null) {
+                    // Set the tree as parent to the current tree
+                    parentTree.addChild(tree);
+                }
+            } else {
+                // When the tree doesn't have a place to be added, add it to our forest.
+                trees.add(tree);
+            }
         }
     }
 
@@ -35,7 +65,7 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
             }
         }
 
-        // Get the most upper parent we can find with this method in it
+        // Get the most upper parent we can find with this method in, until we reach to the root of the tree
         if (methodDecl != null && methodOwnerClassTree != null) {
             while (methodOwnerClassTree.getParent() != null) {
                 var parent = methodOwnerClassTree.getParent();
@@ -43,11 +73,10 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
                     methodOwnerClassTree = parent;
                 }
             }
-            return methodOwnerClassTree;
         }
 
 
-        return null;
+        return methodOwnerClassTree;
     }
 
     @Override
