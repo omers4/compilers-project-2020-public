@@ -43,4 +43,14 @@ public class ASTUtils implements IASTUtils {
         }
         return null;
     }
+
+    @Override
+    public ClassDecl getClassFromName(String name) {
+        for (ClassDecl classDecl : program.classDecls()) {
+            if (classDecl.name().equals(name)) {
+                return classDecl;
+            }
+        }
+        return null;
+    }
 }
