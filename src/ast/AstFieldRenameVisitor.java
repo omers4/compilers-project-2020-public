@@ -1,4 +1,6 @@
 package ast;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AstFieldRenameVisitor implements Visitor {
 
@@ -6,12 +8,14 @@ public class AstFieldRenameVisitor implements Visitor {
     private int originalLine;
     private String newName;
     private Boolean inChangeScope;
+    private Set<String> classesWithChangedField;
 
     public AstFieldRenameVisitor(String originalName, int originalLine, String newName) {
             this.originalLine = originalLine;
             this.originalName = originalName;
             this.newName = newName;
             this.inChangeScope = false;
+            this.classesWithChangedField = new HashSet<String>();
     }
 
     private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
@@ -30,11 +34,16 @@ public class AstFieldRenameVisitor implements Visitor {
     @Override
     public void visit(ClassDecl classDecl) {
         if (classDecl.superName() != null) {
+            if (this.classesWithChangedField.contains(classDecl.superName())) {
+                this.inChangeScope = true;
+                this.classesWithChangedField.add(classDecl.name());
+            }
         }
 
         for (var fieldDecl : classDecl.fields()) {
             if (fieldDecl.lineNumber == this.originalLine) {
                 this.inChangeScope = true;
+                this.classesWithChangedField.add(classDecl.name());
             }
             fieldDecl.accept(this);
         }
@@ -53,8 +62,13 @@ public class AstFieldRenameVisitor implements Visitor {
     @Override
     public void visit(MethodDecl methodDecl) {
         methodDecl.returnType().accept(this);
+        Boolean tempInScope = this.inChangeScope;
 
         for (var formal : methodDecl.formals()) {
+            // Order of the If's matter!
+            if(this.inChangeScope && formal.name().equals(this.originalName)) {
+                this.inChangeScope = false;
+            }
             if(formal.lineNumber == this.originalLine) {
                 this.inChangeScope = true;
             }
@@ -62,6 +76,9 @@ public class AstFieldRenameVisitor implements Visitor {
         }
 
         for (var varDecl : methodDecl.vardecls()) {
+            if(this.inChangeScope && varDecl.name().equals(this.originalName)) {
+                this.inChangeScope = false;
+            }
             if(varDecl.lineNumber == this.originalLine) {
                 this.inChangeScope = true;
             }
@@ -73,7 +90,7 @@ public class AstFieldRenameVisitor implements Visitor {
 
         methodDecl.ret().accept(this);
 
-        this.inChangeScope = false;
+        this.inChangeScope = tempInScope;
     }
 
     @Override
