@@ -24,8 +24,10 @@ public class AstMethodCallsRenameVisitor implements Visitor {
     private ArrayList<ClassTree> familyList; // predecessor family (predecessor as root)
     private boolean isInFamily; // used to know if in class scope in the family
     private boolean changeMethod; // used to know if we need to change method name
-    private boolean isMethodCall; // used to know if we in owner method expr
+    private boolean isMethodCall; // used to know if we in owner method expr or varDecl from method
 
+    private boolean isRefInFamily; // used to know if RefType is in family
+    private ArrayList<String> methodVarFamily; // var which their type in family
 
     public AstMethodCallsRenameVisitor(ClassHierarchyForest classHierarchy, ClassTree predecessor,
                                        String originalName, int originalLine, String newName) {
@@ -45,6 +47,8 @@ public class AstMethodCallsRenameVisitor implements Visitor {
             this.familyList = (ArrayList<ClassTree>) predecessor.getFamilyList(this.familyList);
         }
 
+        this.isRefInFamily = false;
+        this.methodVarFamily = new ArrayList<>();
     }
 
 
@@ -93,7 +97,8 @@ public class AstMethodCallsRenameVisitor implements Visitor {
 
     @Override
     public void visit(MethodDecl methodDecl) {
-        // TODO: renameMethodNameInSubtree or here?
+        this.methodVarFamily = new ArrayList<>();
+
         if (this.isInFamily && methodDecl.name().equals(this.originalName)) {
             methodDecl.setName(this.newName);
         }
@@ -103,24 +108,36 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         for (var formal : methodDecl.formals()) {
             formal.accept(this);
         }
+
+        this.isMethodCall = true;
         for (var varDecl : methodDecl.vardecls()) {
             varDecl.accept(this);
         }
+        this.isMethodCall = false;
+
         for (var stmt : methodDecl.body()) {
             stmt.accept(this);
         }
 
         methodDecl.ret().accept(this);
+
+        this.methodVarFamily = new ArrayList<>();
     }
 
     @Override
     public void visit(FormalArg formalArg) {
         formalArg.type().accept(this);
+        if (this.isRefInFamily)
+            this.methodVarFamily.add(formalArg.name());
+        this.isRefInFamily = false;
     }
 
     @Override
     public void visit(VarDecl varDecl) {
         varDecl.type().accept(this);
+        if (this.isMethodCall && this.isRefInFamily)
+            this.methodVarFamily.add(varDecl.name());
+        this.isRefInFamily = false;
     }
 
     @Override
@@ -195,13 +212,12 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         e.arrayExpr().accept(this);
     }
 
-    // TODO
     @Override
     public void visit(MethodCallExpr e) {
 
         if(e.methodId().equals(this.originalName)){
             this.isMethodCall = true;
-            e.ownerExpr().accept(this); // is this correct? visit only when rename method?
+            e.ownerExpr().accept(this); // TODO: is this correct? visit only when rename method?
             if(this.changeMethod)
                 e.setMethodId(this.newName);
         }
@@ -228,9 +244,12 @@ public class AstMethodCallsRenameVisitor implements Visitor {
     // TODO: static type
     @Override
     public void visit(IdentifierExpr e) {
+        if (this.isMethodCall){
+            if(this.methodVarFamily.contains(e.id()))
+                this.changeMethod = true;
+        }
     }
 
-    //
     public void visit(ThisExpr e) {
         if (this.isMethodCall && this.isInFamily)
             this.changeMethod = true;
@@ -241,7 +260,6 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         e.lengthExpr().accept(this);
     }
 
-    // TODO:
     @Override
     public void visit(NewObjectExpr e) {
         if(this.isMethodCall && isClassNameInPredecessorFamily(e.classId()))
@@ -267,6 +285,9 @@ public class AstMethodCallsRenameVisitor implements Visitor {
 
     @Override
     public void visit(RefType t) {
+        if (this.isClassNameInPredecessorFamily(t.id())) {
+            this.isRefInFamily = true;
+        }
     }
 }
 
