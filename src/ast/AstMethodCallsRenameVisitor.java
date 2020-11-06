@@ -1,5 +1,8 @@
 package ast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
 * The target of this class is to rename the *calls* to a method "foo" to a call on the method "bar".
 * There are 3 such cases-
@@ -8,16 +11,21 @@ package ast;
 * 3. B b; ....; b.foo();
 * */
 public class AstMethodCallsRenameVisitor implements Visitor {
-    private StringBuilder builder = new StringBuilder();
-    private int indent = 0;
 
     // Used for understanding if, for example, B is a subclass of A.
     private ClassHierarchyForest classHierarchy;
     // Used to represent the predecessor of the class of the one the original function we are trying to change
     private ClassTree predecessor;
+
     private String originalName;
     private int originalLine;
     private String newName;
+
+    private ArrayList<ClassTree> familyList; // predecessor family (predecessor as root)
+    private boolean isInFamily; // used to know if in class scope in the family
+    private boolean changeMethod; // used to know if we need to change method name
+    private boolean isMethodCall; // used to know if we in owner method expr
+
 
     public AstMethodCallsRenameVisitor(ClassHierarchyForest classHierarchy, ClassTree predecessor,
                                        String originalName, int originalLine, String newName) {
@@ -26,93 +34,75 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         this.originalName = originalName;
         this.originalLine = originalLine;
         this.newName = newName;
+
+        this.isMethodCall = false;
+        this.changeMethod = false;
+        this.isInFamily = false;
+        this.familyList = null;
+        if (this.predecessor != null){
+            this.familyList = new ArrayList<>();
+            this.familyList.add(predecessor);
+            this.familyList = (ArrayList<ClassTree>) predecessor.getFamilyList(this.familyList);
+        }
+
     }
 
-    private void appendWithIndent(String str) {
-        builder.append("\t".repeat(indent));
-        builder.append(str);
+
+    private boolean isClassNameInPredecessorFamily(String name){
+        if (this.predecessor != null)
+            return (this.predecessor).isNameInFamily(this.familyList, name);
+        return false;
     }
+
 
     private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
-        builder.append("(");
         e.e1().accept(this);
-        builder.append(")");
-        builder.append(" " + infixSymbol + " ");
-        builder.append("(");
         e.e2().accept(this);
-        builder.append(")");
     }
-
 
     @Override
     public void visit(Program program) {
         program.mainClass().accept(this);
-        builder.append("\n");
         for (ClassDecl classdecl : program.classDecls()) {
             classdecl.accept(this);
-            builder.append("\n");
         }
     }
 
     @Override
     public void visit(ClassDecl classDecl) {
-        appendWithIndent("class ");
-        builder.append(classDecl.name());
-        if (classDecl.superName() != null) {
-            builder.append(" extends ");
-            builder.append(classDecl.superName());
-        }
-        builder.append(" {\n");
+        //if (classDecl.superName() != null) {}
 
-        indent++;
+        if (this.isClassNameInPredecessorFamily(classDecl.name())) {
+            this.isInFamily = true;
+        }
+
         for (var fieldDecl : classDecl.fields()) {
             fieldDecl.accept(this);
-            builder.append("\n");
         }
         for (var methodDecl : classDecl.methoddecls()) {
             methodDecl.accept(this);
-            builder.append("\n");
         }
-        indent--;
-        appendWithIndent("}\n");
+
+        this.isInFamily = false;
     }
 
     @Override
     public void visit(MainClass mainClass) {
-        appendWithIndent("class ");
-        builder.append(mainClass.name());
-        builder.append(" {\n");
-        indent++;
-        appendWithIndent("public static void main(String[] ");
-        builder.append(mainClass.argsName());
-        builder.append(") {");
-        builder.append("\n");
-        indent++;
         mainClass.mainStatement().accept(this);
-        indent--;
-        appendWithIndent("}\n");
-        indent--;
-        appendWithIndent("}\n");
     }
 
     @Override
     public void visit(MethodDecl methodDecl) {
-        appendWithIndent("");
-        methodDecl.returnType().accept(this);
-        builder.append(" ");
-        builder.append(methodDecl.name());
-        builder.append("(");
-
-        String delim = "";
-        for (var formal : methodDecl.formals()) {
-            builder.append(delim);
-            formal.accept(this);
-            delim = ", ";
+        // TODO: renameMethodNameInSubtree or here?
+        if (this.isInFamily && methodDecl.name().equals(this.originalName)) {
+            methodDecl.setName(this.newName);
         }
-        builder.append(") {\n");
 
-        indent++;
+        methodDecl.returnType().accept(this);
 
+        for (var formal : methodDecl.formals()) {
+            formal.accept(this);
+        }
         for (var varDecl : methodDecl.vardecls()) {
             varDecl.accept(this);
         }
@@ -120,96 +110,53 @@ public class AstMethodCallsRenameVisitor implements Visitor {
             stmt.accept(this);
         }
 
-        appendWithIndent("return ");
         methodDecl.ret().accept(this);
-        builder.append(";");
-        builder.append("\n");
-
-        indent--;
-        appendWithIndent("}\n");
     }
 
     @Override
     public void visit(FormalArg formalArg) {
         formalArg.type().accept(this);
-        builder.append(" ");
-        builder.append(formalArg.name());
     }
 
     @Override
     public void visit(VarDecl varDecl) {
-        appendWithIndent("");
         varDecl.type().accept(this);
-        builder.append(" ");
-        builder.append(varDecl.name());
-        builder.append(";\n");
     }
 
     @Override
     public void visit(BlockStatement blockStatement) {
-        appendWithIndent("{");
-        indent++;
         for (var s : blockStatement.statements()) {
-            builder.append("\n");
             s.accept(this);
         }
-        indent--;
-        builder.append("\n");
-        appendWithIndent("}\n");
     }
 
     @Override
     public void visit(IfStatement ifStatement) {
-        appendWithIndent("if (");
         ifStatement.cond().accept(this);
-        builder.append(")\n");
-        indent++;
         ifStatement.thencase().accept(this);
-        indent--;
-        appendWithIndent("else\n");
-        indent++;
         ifStatement.elsecase().accept(this);
-        indent--;
     }
 
     @Override
     public void visit(WhileStatement whileStatement) {
-        appendWithIndent("while (");
         whileStatement.cond().accept(this);
-        builder.append(") {");
-        indent++;
         whileStatement.body().accept(this);
-        indent--;
-        builder.append("\n");
-        appendWithIndent("}\n");
     }
 
     @Override
     public void visit(SysoutStatement sysoutStatement) {
-        appendWithIndent("System.out.println(");
         sysoutStatement.arg().accept(this);
-        builder.append(");\n");
     }
 
     @Override
     public void visit(AssignStatement assignStatement) {
-        appendWithIndent("");
-        builder.append(assignStatement.lv());
-        builder.append(" = ");
         assignStatement.rv().accept(this);
-        builder.append(";\n");
     }
 
     @Override
     public void visit(AssignArrayStatement assignArrayStatement) {
-        appendWithIndent("");
-        builder.append(assignArrayStatement.lv());
-        builder.append("[");
         assignArrayStatement.index().accept(this);
-        builder.append("]");
-        builder.append(" = ");
         assignArrayStatement.rv().accept(this);
-        builder.append(";\n");
     }
 
     @Override
@@ -239,103 +186,87 @@ public class AstMethodCallsRenameVisitor implements Visitor {
 
     @Override
     public void visit(ArrayAccessExpr e) {
-        builder.append("(");
         e.arrayExpr().accept(this);
-        builder.append(")");
-        builder.append("[");
         e.indexExpr().accept(this);
-        builder.append("]");
     }
 
     @Override
     public void visit(ArrayLengthExpr e) {
-        builder.append("(");
         e.arrayExpr().accept(this);
-        builder.append(")");
-        builder.append(".length");
     }
 
+    // TODO
     @Override
     public void visit(MethodCallExpr e) {
-        builder.append("(");
-        e.ownerExpr().accept(this);
-        builder.append(")");
-        builder.append(".");
-        builder.append(e.methodId());
-        builder.append("(");
 
-        String delim = "";
-        for (Expr arg : e.actuals()) {
-            builder.append(delim);
-            arg.accept(this);
-            delim = ", ";
+        if(e.methodId().equals(this.originalName)){
+            this.isMethodCall = true;
+            e.ownerExpr().accept(this); // is this correct? visit only when rename method?
+            if(this.changeMethod)
+                e.setMethodId(this.newName);
         }
-        builder.append(")");
+        this.isMethodCall = false;
+        this.changeMethod = false;
+
+        for (Expr arg : e.actuals()) {
+            arg.accept(this);
+        }
     }
 
     @Override
     public void visit(IntegerLiteralExpr e) {
-        builder.append(e.num());
     }
 
     @Override
     public void visit(TrueExpr e) {
-        builder.append("true");
     }
 
     @Override
     public void visit(FalseExpr e) {
-        builder.append("false");
     }
 
+    // TODO: static type
     @Override
     public void visit(IdentifierExpr e) {
-        builder.append(e.id());
     }
 
+    //
     public void visit(ThisExpr e) {
-        builder.append("this");
+        if (this.isMethodCall && this.isInFamily)
+            this.changeMethod = true;
     }
 
     @Override
     public void visit(NewIntArrayExpr e) {
-        builder.append("new int[");
         e.lengthExpr().accept(this);
-        builder.append("]");
     }
 
+    // TODO:
     @Override
     public void visit(NewObjectExpr e) {
-        builder.append("new ");
-        builder.append(e.classId());
-        builder.append("()");
+        if(this.isMethodCall && isClassNameInPredecessorFamily(e.classId()))
+                this.changeMethod = true;
     }
 
     @Override
     public void visit(NotExpr e) {
-        builder.append("!(");
         e.e().accept(this);
-        builder.append(")");
     }
 
     @Override
     public void visit(IntAstType t) {
-        builder.append("int");
     }
 
     @Override
     public void visit(BoolAstType t) {
-        builder.append("boolean");
     }
 
     @Override
     public void visit(IntArrayAstType t) {
-        builder.append("int[]");
     }
 
     @Override
     public void visit(RefType t) {
-        builder.append(t.id());
     }
 }
 

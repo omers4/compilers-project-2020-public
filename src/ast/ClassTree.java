@@ -74,4 +74,27 @@ public class ClassTree implements IClassTree {
             child.renameMethodNameInSubtree(originalName, newName);
         }
     }
+
+
+    public List<ClassTree> getFamilyList(List<ClassTree> familyList) {
+        List<ClassTree> children = this.getChildren();
+        if (children != null) {
+            familyList.addAll(children);
+            for (ClassTree child : children) {
+                familyList.addAll(child.getFamilyList(familyList));
+            }
+        }
+        return familyList;
+    }
+
+    public boolean isNameInFamily(List<ClassTree> familyList, String name) {
+        for (ClassTree tree : familyList) {
+            if (tree.data.name().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }
