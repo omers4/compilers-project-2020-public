@@ -2,9 +2,16 @@
 /shelf/
 .idea/
 out/
+build/
 
 build.xml
 
 compilers-project-2020-public.iml
 
 examples/examples.iml
+
+src/Lexer.java
+src/Parser.java
+src/sym.java
+
+mjavac.jar
