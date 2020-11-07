@@ -50,6 +50,8 @@ public class ClassTree implements IClassTree {
         return parent;
     }
 
+    public ClassDecl getData(){return data;}
+
     public ClassTree getClassTree(ClassDecl classDecl) {
         if (data == classDecl) {
             return this;

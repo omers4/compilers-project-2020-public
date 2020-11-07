@@ -83,4 +83,13 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
     public boolean isSubclassOf(String childClassName, ClassDecl parentClassName) {
         return false;
     }
+
+    public ClassTree findClassTree(ClassDecl classDecl){
+        for (ClassTree tree : trees){
+            ClassTree find = tree.getClassTree(classDecl);
+            if(find != null)
+                return find;
+        }
+        return null;
+    }
 }
