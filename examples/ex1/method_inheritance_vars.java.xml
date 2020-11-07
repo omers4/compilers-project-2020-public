@@ -64,9 +64,7 @@
                     <ret>
                         <call>
                             <ownerExpr>
-                                <new-object>
-                                  <classId>E</classId>
-                                </new-object>
+                                <this/>
                             </ownerExpr>
                             <methodId>foo</methodId>
                             <actuals/>
@@ -92,9 +90,7 @@
                     <ret>
                         <call>
                             <ownerExpr>
-                                <new-object>
-                                    <classId>B</classId>
-                                </new-object>
+                                <this/>
                             </ownerExpr>
                             <methodId>foo</methodId>
                             <actuals/>
@@ -106,7 +102,26 @@
         <classdecl>
             <name>B</name>
             <superName>A</superName>
-            <fields/>
+            <fields>
+                <field>
+                    <lineNumber>11</lineNumber>
+                    <type>
+                        <ref>
+                            <id>A</id>
+                        </ref>
+                    </type>
+                    <name>a</name>
+                </field>
+                <field>
+                    <lineNumber>11</lineNumber>
+                    <type>
+                        <ref>
+                            <id>F</id>
+                        </ref>
+                    </type>
+                    <name>somethingA</name>
+                </field>
+            </fields>
             <methoddecls>
                 <methoddecl>
                     <lineNumber>22</lineNumber>
@@ -120,9 +135,7 @@
                     <ret>
                         <call>
                             <ownerExpr>
-                                <new-object>
-                                    <classId>C</classId>
-                                </new-object>
+                                <this/>
                             </ownerExpr>
                             <methodId>foo</methodId>
                             <actuals/>
@@ -134,23 +147,79 @@
         <classdecl>
             <name>D</name>
             <superName>B</superName>
-            <fields/>
+            <fields>
+                <field>
+                    <lineNumber>11</lineNumber>
+                    <type>
+                        <ref>
+                            <id>A</id>
+                        </ref>
+                    </type>
+                    <name>AField</name>
+                </field>
+            </fields>
             <methoddecls>
                 <methoddecl>
                     <lineNumber>37</lineNumber>
                     <returnType>
                         <int/>
                     </returnType>
-                    <name>foo</name>
+                    <name>bar</name>
                     <formals/>
                     <vardecls/>
-                    <body/>
+                    <body>
+                        <assign>
+                            <lv>somethingA</lv>
+                            <rv>
+                                <call>
+                                    <ownerExpr>
+                                        <ref-id>
+                                            <id>a</id>
+                                        </ref-id>
+                                    </ownerExpr>
+                                    <methodId>foo</methodId>
+                                    <actuals/>
+                                </call>
+                            </rv>
+                        </assign>
+                    </body>
                     <ret>
                         <call>
                             <ownerExpr>
-                                <new-object>
-                                    <classId>D</classId>
-                                </new-object>
+                                <ref-id>
+                                    <id>AField</id>
+                                </ref-id>
+                            </ownerExpr>
+                            <methodId>foo</methodId>
+                            <actuals/>
+                        </call>
+                    </ret>
+                </methoddecl>
+                <methoddecl>
+                    <lineNumber>38</lineNumber>
+                    <returnType>
+                        <int/>
+                    </returnType>
+                    <name>bar2</name>
+                    <formals/>
+                    <vardecls>
+                        <vardecl>
+                            <lineNumber>53</lineNumber>
+                            <type>
+                                <ref>
+                                    <id>A</id>
+                                </ref>
+                            </type>
+                            <name>somethingA</name>
+                        </vardecl>
+                    </vardecls>
+                    <body />
+                    <ret>
+                        <call>
+                            <ownerExpr>
+                                <ref-id>
+                                    <id>somethingA</id>
+                                </ref-id>
                             </ownerExpr>
                             <methodId>foo</methodId>
                             <actuals/>
@@ -172,30 +241,69 @@
                 <formals/>
                 <vardecls>
                     <vardecl>
-                        <lineNumber>10</lineNumber>
+                        <lineNumber>44</lineNumber>
                         <type>
                             <ref>
-                                <id>C</id>
+                                <id>E</id>
                             </ref>
                         </type>
                         <name>e</name>
                     </vardecl>
+                    <vardecl>
+                        <lineNumber>44</lineNumber>
+                        <type>
+                            <ref>
+                                <id>B</id>
+                            </ref>
+                        </type>
+                        <name>b</name>
+                    </vardecl>
+                    <vardecl>
+                        <lineNumber>45</lineNumber>
+                        <type>
+                            <ref>
+                                <id>D</id>
+                            </ref>
+                        </type>
+                        <name>d</name>
+                    </vardecl>
                 </vardecls>
                 <body>
                     <assign>
-                        <lv>e</lv>
+                        <lv>somethingB</lv>
                         <rv>
-                            <new-object>
-                                <classId>C</classId>
-                            </new-object>
+                            <call>
+                                <ownerExpr>
+                                    <ref-id>
+                                        <id>b</id>
+                                    </ref-id>
+                                </ownerExpr>
+                                <methodId>foo</methodId>
+                                <actuals/>
+                            </call>
                         </rv>
                     </assign>
+                    <assign>
+                        <lv>somethingE</lv>
+                        <rv>
+                            <call>
+                                <ownerExpr>
+                                    <ref-id>
+                                        <id>e</id>
+                                    </ref-id>
+                                </ownerExpr>
+                                <methodId>foo</methodId>
+                                <actuals/>
+                            </call>
+                        </rv>
+                    </assign>
+
                 </body>
                 <ret>
                     <call>
                         <ownerExpr>
                             <ref-id>
-                                <id>e</id>
+                                <id>d</id>
                             </ref-id>
                         </ownerExpr>
                         <methodId>foo</methodId>
