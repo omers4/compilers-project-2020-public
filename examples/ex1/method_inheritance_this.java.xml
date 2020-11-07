@@ -64,9 +64,7 @@
                     <ret>
                         <call>
                             <ownerExpr>
-                                <new-object>
-                                  <classId>E</classId>
-                                </new-object>
+                                <this/>
                             </ownerExpr>
                             <methodId>foo</methodId>
                             <actuals/>
@@ -92,9 +90,7 @@
                     <ret>
                         <call>
                             <ownerExpr>
-                                <new-object>
-                                    <classId>B</classId>
-                                </new-object>
+                                <this/>
                             </ownerExpr>
                             <methodId>foo</methodId>
                             <actuals/>
@@ -120,9 +116,7 @@
                     <ret>
                         <call>
                             <ownerExpr>
-                                <new-object>
-                                    <classId>C</classId>
-                                </new-object>
+                                <this/>
                             </ownerExpr>
                             <methodId>foo</methodId>
                             <actuals/>
@@ -141,16 +135,14 @@
                     <returnType>
                         <int/>
                     </returnType>
-                    <name>foo</name>
+                    <name>bar</name>
                     <formals/>
                     <vardecls/>
                     <body/>
                     <ret>
                         <call>
                             <ownerExpr>
-                                <new-object>
-                                    <classId>D</classId>
-                                </new-object>
+                              <this />
                             </ownerExpr>
                             <methodId>foo</methodId>
                             <actuals/>
@@ -194,9 +186,7 @@
                 <ret>
                     <call>
                         <ownerExpr>
-                            <ref-id>
-                                <id>e</id>
-                            </ref-id>
+                            <this/>
                         </ownerExpr>
                         <methodId>foo</methodId>
                         <actuals/>
