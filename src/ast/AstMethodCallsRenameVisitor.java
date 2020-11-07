@@ -27,7 +27,9 @@ public class AstMethodCallsRenameVisitor implements Visitor {
     private boolean isMethodCall; // used to know if we in owner method expr or varDecl from method
 
     private boolean isRefInFamily; // used to know if RefType is in family
-    private ArrayList<String> methodVarFamily; // var which their type in family
+    private ArrayList<String> methodVarFamily; // var in method scope which their type in family
+    private ArrayList<String> methodVarAll; // all var in method
+    private ClassDecl currClassDecl; // current class decl, used to look for var decl
 
     public AstMethodCallsRenameVisitor(ClassHierarchyForest classHierarchy, ClassTree predecessor,
                                        String originalName, int originalLine, String newName) {
@@ -49,8 +51,23 @@ public class AstMethodCallsRenameVisitor implements Visitor {
 
         this.isRefInFamily = false;
         this.methodVarFamily = new ArrayList<>();
+        this.methodVarAll  = new ArrayList<>();
+        this.currClassDecl = null;
     }
 
+    private AstType getFieldType(ClassDecl classDecl, String fieldName){
+        ClassTree classTree = this.classHierarchy.findClassTree(classDecl);
+        return getFieldType(classTree,fieldName);
+    }
+
+    // assume fieldName decl
+    private AstType getFieldType(ClassTree classTree, String fieldName){
+        for(var field: classTree.getData().fields()){
+            if (field.name().equals(fieldName))
+                return field.type();
+        }
+        return getFieldType(classTree.getParent(),fieldName);
+    }
 
     private boolean isClassNameInPredecessorFamily(String name){
         if (this.predecessor != null)
@@ -75,6 +92,7 @@ public class AstMethodCallsRenameVisitor implements Visitor {
     @Override
     public void visit(ClassDecl classDecl) {
         //if (classDecl.superName() != null) {}
+        this.currClassDecl = classDecl;
 
         if (this.isClassNameInPredecessorFamily(classDecl.name())) {
             this.isInFamily = true;
@@ -98,6 +116,7 @@ public class AstMethodCallsRenameVisitor implements Visitor {
     @Override
     public void visit(MethodDecl methodDecl) {
         this.methodVarFamily = new ArrayList<>();
+        this.methodVarAll = new ArrayList<>();
 
         if (this.isInFamily && methodDecl.name().equals(this.originalName)) {
             methodDecl.setName(this.newName);
@@ -121,7 +140,6 @@ public class AstMethodCallsRenameVisitor implements Visitor {
 
         methodDecl.ret().accept(this);
 
-        this.methodVarFamily = new ArrayList<>();
     }
 
     @Override
@@ -130,13 +148,17 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         if (this.isRefInFamily)
             this.methodVarFamily.add(formalArg.name());
         this.isRefInFamily = false;
+        this.methodVarAll.add(formalArg.name());
     }
 
     @Override
     public void visit(VarDecl varDecl) {
         varDecl.type().accept(this);
-        if (this.isMethodCall && this.isRefInFamily)
-            this.methodVarFamily.add(varDecl.name());
+        if (this.isMethodCall){
+            this.methodVarAll.add(varDecl.name());
+            if (this.isRefInFamily)
+                this.methodVarFamily.add(varDecl.name());
+        }
         this.isRefInFamily = false;
     }
 
@@ -247,6 +269,14 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         if (this.isMethodCall){
             if(this.methodVarFamily.contains(e.id()))
                 this.changeMethod = true;
+            if(!this.methodVarAll.contains(e.id())){
+                AstType type = getFieldType(this.currClassDecl, e.id());
+                type.accept(this);
+                if (this.isRefInFamily)
+                    this.changeMethod = true;
+                this.isRefInFamily = false;
+            }
+
         }
     }
 

@@ -11,6 +11,8 @@ public interface IClassTree {
     public void setClassDecl(ClassDecl data);
     public ClassTree getParent();
 
+    public ClassDecl getData();
+
     // The target of this function if to get the tree node that contains the class declaration
     public ClassTree getClassTree(ClassDecl classDecl);
 

@@ -43,6 +43,12 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
                 if (parentTree != null) {
                     // Set the tree as parent to the current tree
                     parentTree.addChild(tree);
+                } else {
+                    ClassTree parentTreeFromResolved = getClassTreeByNameFromForest(trees, superName);
+                    if (parentTreeFromResolved != null) {
+                        // Set the tree as parent to the current tree
+                        parentTreeFromResolved.addChild(tree);
+                    }
                 }
             } else {
                 // When the tree doesn't have a place to be added, add it to our forest.
@@ -72,6 +78,9 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
                 if (parent.getClassDecl().hasMethod(methodDecl.name())) {
                     methodOwnerClassTree = parent;
                 }
+                if (parent.getParent() == null) {
+                    break;
+                }
             }
         }
 
@@ -82,5 +91,14 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
     @Override
     public boolean isSubclassOf(String childClassName, ClassDecl parentClassName) {
         return false;
+    }
+
+    public ClassTree findClassTree(ClassDecl classDecl){
+        for (ClassTree tree : trees){
+            ClassTree find = tree.getClassTree(classDecl);
+            if(find != null)
+                return find;
+        }
+        return null;
     }
 }
