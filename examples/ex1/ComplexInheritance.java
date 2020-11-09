@@ -32,3 +32,18 @@ class C extends Example{
         return x+x;
     }
 }
+
+class D extends Example{
+    public void D_Test() {
+        x = 23;
+        return x+x;
+    }
+}
+
+class E {
+    int x;
+    public void E_Test() {
+        x = 7;
+        return x+x;
+    }
+}

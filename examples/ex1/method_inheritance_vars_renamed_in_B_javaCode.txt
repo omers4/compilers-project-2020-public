@@ -1,0 +1,65 @@
+class Main {
+	public static void main(String[] args) {
+		System.out.println((new C()).foo());
+	}
+}
+
+class F {
+	int bar() {
+		return (new A()).foo();
+	}
+
+}
+
+class E extends F {
+	int foo() {
+		return (this).foo();
+	}
+
+}
+
+class A extends F {
+	int foo() {
+		return (this).foo();
+	}
+
+}
+
+class B extends A {
+	A a;
+
+	F somethingA;
+
+	int foo() {
+		return (this).foo();
+	}
+
+}
+
+class D extends B {
+	A AField;
+
+	int bar() {
+		somethingA = (a).foo();
+		return (AField).foo();
+	}
+
+	int bar2() {
+		A somethingA_new;
+		return (somethingA_new).foo();
+	}
+
+}
+
+class C {
+	int foo() {
+		E e;
+		B b;
+		D d;
+		somethingB = (b).foo();
+		somethingE = (e).foo();
+		return (d).foo();
+	}
+
+}
+
