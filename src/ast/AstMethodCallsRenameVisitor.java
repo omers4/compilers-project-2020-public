@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
-* The target of this class is to rename the *calls* to a method "foo" to a call on the method "bar".
+* The target of this class is to rename the *calls* to a method "originalName" to a call on the method "newName".
 * There are 3 such cases-
 * 1. new B().foo();
 * 2. this.foo();
@@ -27,8 +27,8 @@ public class AstMethodCallsRenameVisitor implements Visitor {
     private boolean isMethodCall; // used to know if we in owner method expr or varDecl from method
 
     private boolean isRefInFamily; // used to know if RefType is in family
-    private ArrayList<String> methodVarFamily; // var in method scope which their type in family
-    private ArrayList<String> methodVarAll; // all var in method
+    private ArrayList<String> methodVarFamily; // var in method scope, which their type in family
+    private ArrayList<String> methodVarAll; // all var in method scope
     private ClassDecl currClassDecl; // current class decl, used to look for var decl
 
     public AstMethodCallsRenameVisitor(ClassHierarchyForest classHierarchy, ClassTree predecessor,
@@ -55,12 +55,15 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         this.currClassDecl = null;
     }
 
+    // given fieldName and current classDecl, return AstType of this fieldName
     private AstType getFieldType(ClassDecl classDecl, String fieldName){
         ClassTree classTree = this.classHierarchy.findClassTree(classDecl);
         return getFieldType(classTree,fieldName);
     }
 
-    // assume fieldName decl
+    /* like above but with classTree
+    assume fieldName is decl in classTree or his parents
+     */
     private AstType getFieldType(ClassTree classTree, String fieldName){
         for(var field: classTree.getData().fields()){
             if (field.name().equals(fieldName))
@@ -69,6 +72,7 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         return getFieldType(classTree.getParent(),fieldName);
     }
 
+    // given name of class return true if class in predecessor family (predecessor as root)
     private boolean isClassNameInPredecessorFamily(String name){
         if (this.predecessor != null)
             return (this.predecessor).isNameInFamily(this.familyList, name);
@@ -91,9 +95,10 @@ public class AstMethodCallsRenameVisitor implements Visitor {
 
     @Override
     public void visit(ClassDecl classDecl) {
-        //if (classDecl.superName() != null) {}
+        // saving current classDecl
         this.currClassDecl = classDecl;
 
+        // check if class in family
         if (this.isClassNameInPredecessorFamily(classDecl.name())) {
             this.isInFamily = true;
         }
@@ -113,6 +118,10 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         mainClass.mainStatement().accept(this);
     }
 
+    /* visit MethodDecl:
+     1. save all vars, and all vars in family type. (vars means formal or local)
+     2. if its name originalName check to if class in family and changed to newName
+     */
     @Override
     public void visit(MethodDecl methodDecl) {
         this.methodVarFamily = new ArrayList<>();
@@ -142,6 +151,9 @@ public class AstMethodCallsRenameVisitor implements Visitor {
 
     }
 
+    /* visit FormalArg:
+     add var name to methodVarAll list and if Ref type in family add to methodVarFamily list too
+     */
     @Override
     public void visit(FormalArg formalArg) {
         formalArg.type().accept(this);
@@ -151,6 +163,10 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         this.methodVarAll.add(formalArg.name());
     }
 
+    /* visit VarDecl:
+     if VarDecl called from method,
+     add var name to methodVarAll list and if Ref type in family add to methodVarFamily list too
+     */
     @Override
     public void visit(VarDecl varDecl) {
         varDecl.type().accept(this);
@@ -234,12 +250,15 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         e.arrayExpr().accept(this);
     }
 
+    /* visit MethodCallExpr:
+    if originalName is called,
+    visit ownerExpr and if after changeMethod is true, change to newName
+     */
     @Override
     public void visit(MethodCallExpr e) {
-
         if(e.methodId().equals(this.originalName)){
             this.isMethodCall = true;
-            e.ownerExpr().accept(this); // TODO: is this correct? visit only when rename method?
+            e.ownerExpr().accept(this); // visit ownerExpr only when originalName method is called
             if(this.changeMethod)
                 e.setMethodId(this.newName);
         }
@@ -263,7 +282,12 @@ public class AstMethodCallsRenameVisitor implements Visitor {
     public void visit(FalseExpr e) {
     }
 
-    // TODO: static type
+    /* visit IdentifierExpr:
+    if IdentifierExpr is the ownerExpr of MethodCallExpr and one of these:
+    1. if id (var name) in method vars which in family
+    2. if id isn't method var so look for his type, if it's RefType and isRefInFamily set to true
+    than set changeMethod to true
+     */
     @Override
     public void visit(IdentifierExpr e) {
         if (this.isMethodCall){
@@ -280,6 +304,10 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         }
     }
 
+    /* visit ThisExpr:
+    if ThisExpr is the ownerExpr of MethodCallExpr,
+    and the current class is in family, than set changeMethod to true
+     */
     public void visit(ThisExpr e) {
         if (this.isMethodCall && this.isInFamily)
             this.changeMethod = true;
@@ -290,6 +318,10 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         e.lengthExpr().accept(this);
     }
 
+    /* visit NewObjectExpr:
+    if NewObjectExpr is the ownerExpr of MethodCallExpr,
+    and the classId is in family, than set changeMethod to true
+     */
     @Override
     public void visit(NewObjectExpr e) {
         if(this.isMethodCall && isClassNameInPredecessorFamily(e.classId()))
@@ -313,6 +345,9 @@ public class AstMethodCallsRenameVisitor implements Visitor {
     public void visit(IntArrayAstType t) {
     }
 
+    /* visit RefType:
+    if id (var type) in family set isRefInFamily to true
+     */
     @Override
     public void visit(RefType t) {
         if (this.isClassNameInPredecessorFamily(t.id())) {
