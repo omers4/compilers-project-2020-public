@@ -20,8 +20,8 @@ public class Main {
             } else {
                 throw new UnsupportedOperationException("unknown input method " + inputMethod);
             }
-
             var outFile = new PrintWriter(outfilename);
+
             try {
 
                 if (action.equals("marshal")) {
@@ -41,6 +41,8 @@ public class Main {
                     var originalName = args[3];
                     var originalLine = Integer.parseInt(args[4]);
                     var newName = args[5];
+                    AstXMLSerializer xmlSerializer = new AstXMLSerializer();
+                    var tempPrinter = new PrintWriter(outfilename.split("\\.")[0] + "_javaCode.txt");
 
                     boolean isMethod;
                     if (type.equals("var")) {
@@ -64,7 +66,10 @@ public class Main {
                         astChanger = new AstFieldRenameVisitor(originalName, originalLine, newName);
                     }
                     astChanger.visit(prog);
-                    PrintProgram(prog, outFile);
+                    PrintProgram(prog, tempPrinter);
+                    xmlSerializer.serialize(prog, outfilename);
+                    tempPrinter.flush();
+                    tempPrinter.close();
 
                 } else {
                     throw new IllegalArgumentException("unknown command line action " + action);
