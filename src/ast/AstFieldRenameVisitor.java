@@ -40,6 +40,8 @@ public class AstFieldRenameVisitor implements Visitor {
             }
         }
 
+
+
         for (var fieldDecl : classDecl.fields()) {
             if (fieldDecl.lineNumber == this.originalLine) {
                 this.inChangeScope = true;
