@@ -78,15 +78,14 @@ public class ClassTree implements IClassTree {
     }
 
 
-    public List<ClassTree> getFamilyList(List<ClassTree> familyList) {
+    public void getFamilyList(List<ClassTree> familyList) {
         List<ClassTree> children = this.getChildren();
         if (children != null) {
             familyList.addAll(children);
             for (ClassTree child : children) {
-                familyList.addAll(child.getFamilyList(familyList));
+                child.getFamilyList(familyList);
             }
         }
-        return familyList;
     }
 
     public boolean isNameInFamily(List<ClassTree> familyList, String name) {

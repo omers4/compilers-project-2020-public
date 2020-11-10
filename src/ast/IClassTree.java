@@ -19,8 +19,8 @@ public interface IClassTree {
     // Giving a tree of classes, we would like to rename all signatures in inheriting classes
     void renameMethodNameInSubtree(String oldName, String newName);
 
-    // create a list with all this children (and their children etc.). without this (ClassTree which first called).
-    public List<ClassTree> getFamilyList(List<ClassTree> familyList);
+    // add to familyList all this children (and their children etc.). without this (ClassTree which first called).
+    public void getFamilyList(List<ClassTree> familyList);
 
     // return true if class name is in familyList
     public boolean isNameInFamily(List<ClassTree> familyList, String name);

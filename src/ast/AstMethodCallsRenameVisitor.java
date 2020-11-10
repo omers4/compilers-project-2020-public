@@ -46,7 +46,7 @@ public class AstMethodCallsRenameVisitor implements Visitor {
         if (this.predecessor != null){
             this.familyList = new ArrayList<>();
             this.familyList.add(predecessor);
-            this.familyList = (ArrayList<ClassTree>) predecessor.getFamilyList(this.familyList);
+            predecessor.getFamilyList(this.familyList);
         }
 
         this.isRefInFamily = false;
