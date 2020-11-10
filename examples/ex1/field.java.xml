@@ -39,8 +39,22 @@
                     </returnType>
                     <name>run</name>
                     <formals/>
-                    <vardecls/>
+                    <vardecls>
+                    <vardecl>
+                        <lineNumber>16</lineNumber>
+                        <type>
+                            <int/>
+                        </type>
+                        <name>k</name>
+                    </vardecl>
+                    </vardecls>
                     <body>
+                        <assign>
+                            <lv>k</lv>
+                            <rv><ref-id>
+                                <id>x</id>
+                            </ref-id></rv>
+                        </assign>
                         <assign>
                             <lv>x</lv>
                             <rv>
