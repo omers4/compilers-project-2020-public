@@ -80,6 +80,13 @@
                             </type>
                             <name>x</name>
                         </vardecl>
+                        <vardecl>
+                            <lineNumber>17</lineNumber>
+                            <type>
+                                <int/>
+                            </type>
+                            <name>xx</name>
+                        </vardecl>
                     </vardecls>
                     <body>
                         <assign>
@@ -88,6 +95,14 @@
 <int-literal>
     <num>1</num>
 </int-literal>
+                            </rv>
+                        </assign>
+                        <assign>
+                            <lv>xx</lv>
+                            <rv>
+                                <ref-id>
+                                    <id>x</id>
+                                </ref-id>
                             </rv>
                         </assign>
                     </body>

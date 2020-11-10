@@ -44,9 +44,22 @@
                             </type>
                             <name>x</name>
                         </formal>
+                        <formal>
+                            <lineNumber>8</lineNumber>
+                            <type>
+                                <int/>
+                            </type>
+                            <name>k</name>
+                        </formal>
                     </formals>
                     <vardecls/>
                     <body>
+                        <assign>
+                            <lv>k</lv>
+                            <rv>
+                                <ref-id><id>x</id></ref-id>
+                            </rv>
+                        </assign>
                         <assign>
                             <lv>x</lv>
                             <rv>

@@ -13,7 +13,9 @@ class Example {
 
 	public int other() {
 		int x;
+		int xx;
 		x = 1;
+		xx = x;
 		return x - 1;
 	}
 }

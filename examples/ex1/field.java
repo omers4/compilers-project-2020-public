@@ -8,6 +8,8 @@ class Example {
 	int x;
 	
 	public int run() {
+		int k;
+		k = x;
 		x = 0;
 		return x + x;
 	}

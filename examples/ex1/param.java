@@ -5,8 +5,9 @@ class Main {
 } 
 
 class Example {
-	public int run(int x) {
-		x = 0;
+	public int run(int x, int k) {
+		int k;
+		k = x;
 		return x + x;
 	}
 
