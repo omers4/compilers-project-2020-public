@@ -1,7 +1,10 @@
 package ast;
 
+/*
+ * This class represents the hierarchy of the classes of the program.
+ * the hierarchy is actualy a forest of classes.
+ * */
 public interface IClassHierarchyForest {
-    public ClassTree getHighestClassTreeByMethod(int lineNumber);
-    public boolean isSubclassOf(String childClassName, ClassDecl parentClassName);
-    public ClassTree findClassTree(ClassDecl classDecl);
+    ClassTree getHighestClassTreeByMethod(int lineNumber);
+    ClassTree findClassTree(ClassDecl classDecl);
 }

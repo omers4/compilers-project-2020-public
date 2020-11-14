@@ -15,6 +15,10 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
         initForest();
     }
 
+    /*
+    * This method receives a forest and a name of a class,
+    * and returns the subtree in this forest that matches the class.
+    * */
     private ClassTree getClassTreeByNameFromForest(List<ClassTree> forest, String name) {
         ClassDecl methodOwnerClass = astUtils.getClassFromName(name);
         ClassTree methodOwnerClassTree = null;
@@ -27,6 +31,10 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
         return methodOwnerClassTree;
     }
 
+    /*
+     * The target of this method is to initialize the forest by going over all
+     * classes and link them according to the inheritance.
+     * */
     private void initForest() {
         var tempForest = new LinkedList<ClassTree>();
 
@@ -86,11 +94,6 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
 
 
         return methodOwnerClassTree;
-    }
-
-    @Override
-    public boolean isSubclassOf(String childClassName, ClassDecl parentClassName) {
-        return false;
     }
 
     public ClassTree findClassTree(ClassDecl classDecl){

@@ -7,21 +7,6 @@ public class ASTUtils implements IASTUtils {
         this.program = program;
     }
 
-    @Override
-    public ClassDecl getFieldClassFromLineNumber(int lineNumber) {
-        return null;
-    }
-
-    @Override
-    public MethodDecl getArgumentMethodFromLineNumber(int lineNumber) {
-        return null;
-    }
-
-    @Override
-    public MethodDecl getVariableMethodFromLineNumber(int lineNumber) {
-        return null;
-    }
-
     public MethodDecl getMethodFromLineNumber(int lineNumber) {
         for (ClassDecl classDecl : program.classDecls()) {
             for (MethodDecl methodDecl: classDecl.methoddecls()) {

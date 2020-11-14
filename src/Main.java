@@ -61,7 +61,6 @@ public class Main {
                         var predecessor = hierarchy.getHighestClassTreeByMethod(originalLine);
                         astChanger = new AstMethodCallsRenameVisitor(hierarchy, predecessor,
                                 originalName, originalLine, newName);
-                        // predecessor.renameMethodNameInSubtree(originalName, newName);
                     } else {
                         astChanger = new AstFieldRenameVisitor(originalName, originalLine, newName);
                     }

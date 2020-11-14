@@ -1,10 +1,21 @@
 package ast;
 
+/*
+* This is a utils class that provide utilities on the AST.
+* */
 public interface IASTUtils {
-    ClassDecl getFieldClassFromLineNumber(int lineNumber);
-    MethodDecl getArgumentMethodFromLineNumber(int lineNumber);
-    MethodDecl getVariableMethodFromLineNumber(int lineNumber);
+    /*
+    * returns the MethodDecl that is matching the line number in the AST
+    * */
     MethodDecl getMethodFromLineNumber(int lineNumber);
+
+    /*
+     * returns the ClassDecl that is matching the line number in the AST
+     * */
     ClassDecl getClassFromLineNumber(int lineNumber);
+
+    /*
+     * returns the class in the AST whose name is given
+     * */
     ClassDecl getClassFromName(String name);
 }
