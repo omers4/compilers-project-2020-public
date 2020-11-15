@@ -42,7 +42,6 @@ public class Main {
                     var originalLine = Integer.parseInt(args[4]);
                     var newName = args[5];
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
-                    var tempPrinter = new PrintWriter(outfilename.split("\\.")[0] + "_javaCode.txt");
 
                     boolean isMethod;
                     if (type.equals("var")) {
@@ -65,10 +64,7 @@ public class Main {
                         astChanger = new AstFieldRenameVisitor(originalName, originalLine, newName);
                     }
                     astChanger.visit(prog);
-                    PrintProgram(prog, tempPrinter);
                     xmlSerializer.serialize(prog, outfilename);
-                    tempPrinter.flush();
-                    tempPrinter.close();
 
                 } else {
                     throw new IllegalArgumentException("unknown command line action " + action);
