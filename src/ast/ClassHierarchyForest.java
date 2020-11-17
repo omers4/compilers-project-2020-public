@@ -80,20 +80,19 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
         }
 
         // Get the most upper parent we can find with this method in, until we reach to the root of the tree
+        ClassTree highestClassTreeWithMethod = methodOwnerClassTree;
         if (methodDecl != null && methodOwnerClassTree != null) {
             while (methodOwnerClassTree.getParent() != null) {
                 var parent = methodOwnerClassTree.getParent();
                 if (parent.getClassDecl().hasMethod(methodDecl.name())) {
-                    methodOwnerClassTree = parent;
+                    highestClassTreeWithMethod = parent;
                 }
-                if (parent.getParent() == null) {
-                    break;
-                }
+                methodOwnerClassTree = parent;
             }
         }
 
 
-        return methodOwnerClassTree;
+        return highestClassTreeWithMethod;
     }
 
     public ClassTree findClassTree(ClassDecl classDecl){
