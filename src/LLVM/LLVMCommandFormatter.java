@@ -5,7 +5,7 @@ import java.util.List;
 public interface LLVMCommandFormatter {
 
     /* declare i32 @printf(i8*, ...)
-     * -> formatExternalMethodDeclaration(LLVMType.Int, "puts", "i8*, ...") */
+     * -> formatExternalMethodDeclaration(LLVMType.Int, "printf", "i8*, ...") */
     String formatExternalMethodDeclaration(LLVMType retType, String methodName, String params);
 
     /* define i32 @BBS.Start(i8* %this, i32 %.sz)
