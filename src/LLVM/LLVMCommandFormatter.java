@@ -9,8 +9,8 @@ public interface LLVMCommandFormatter {
     String formatExternalMethodDeclaration(LLVMType retType, String methodName, String params);
 
     /* define i32 @BBS.Start(i8* %this, i32 %.sz)
-     * -> formatMethodDefinition(LLVMType.Int, "rv")*/
-    String formatMethodDefinition();
+     * -> formatMethodDefinition(LLVMType.Int, "BBS.Start", new List(...))*/
+    String formatMethodDefinition(LLVMType retType, String name, List<LLVMMethodParam> params);
 
     /* ret i32 %rv
      * -> formatReturn(LLVMType.Int, "rv") */
