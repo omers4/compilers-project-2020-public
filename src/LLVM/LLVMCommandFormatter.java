@@ -2,87 +2,172 @@ package LLVM;
 
 import java.util.List;
 
-public interface LLVMCommandFormatter {
+public class LLVMCommandFormatter implements ILLVMCommandFormatter {
+    private String formatType(LLVMType type) {
+        switch (type) {
+            case Boolean:
+                break;
+            case Byte:
+                break;
+            case String:
+                break;
+            case Int: return "i32";
+            case IntPointer:
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + type);
+        }
+        return "";
+    }
 
-    /* declare i32 @printf(i8*, ...)
-     * -> formatExternalMethodDeclaration(LLVMType.Int, "printf", "i8*, ...") */
-    String formatExternalMethodDeclaration(LLVMType retType, String methodName, String params);
+    private String formatComparisonType(ComparisonType type) {
+        switch (type) {
+            case Equals:
+                return "eq";
+            case LessOrEquals:
+                return "sle";
+            case GreatOrEquals:
+                return "sge";
+        }
+        return "";
+    }
 
-    /* define i32 @BBS.Start(i8* %this, i32 %.sz)
-     * -> formatMethodDefinition(LLVMType.Int, "BBS.Start", new List(...))*/
-    String formatMethodDefinition(LLVMType retType, String name, List<LLVMMethodParam> params);
+    private String formatParams(List<LLVMMethodParam> params) {
+        StringBuilder paramsString = new StringBuilder();
+        for (var param : params) {
+            paramsString.append(String.format("%s %s,", param.getType(), param.getName()));
+        }
+        paramsString.substring(0, paramsString.length()-1);
+        return paramsString.toString();
+    }
 
-    /* ret i32 %rv
-     * -> formatReturn(LLVMType.Int, "%rv") */
-    String formatReturn(LLVMType retType, String register);
+    @Override
+    public String formatExternalMethodDeclaration(LLVMType retType, String methodName, String params) {
+        return String.format("declare %s @%s(%s)", formatType(retType), methodName, params);
+    }
 
-    /* %ptr = alloca i32
-     * -> formatAlloca("%ptr", LLVMType.Int) */
-    String formatAlloca(String register, LLVMType type);
+    @Override
+    public String formatMethodDefinition(LLVMType retType, String name, List<LLVMMethodParam> params) {
+        return String.format("define %s @%s(%s)", formatType(retType), name, formatParams(params));
+    }
 
-    /* store i32 %.sz, i32* %sz
-     * -> formatStore(LLVMType.Int, "%.sz", LLVMType.Int, "%sz") */
-    String formatStore(LLVMType sourceType, String sourceRegister, LLVMType destType, String destRegister);
+    @Override
+    public String formatReturn(LLVMType retType, String register) {
+        return String.format("ret %s %s", formatType(retType), register);
+    }
 
-    /* %_31 = load i32, i32* %_30
-     * -> formatLoad("%_31", LLVMType.Int, "%_30") */
-    String formatLoad(String register, LLVMType valueType, String sourcePointer);
+    @Override
+    public String formatAlloca(String register, LLVMType type) {
+        return String.format("%s = alloca %s", register, formatType(type));
+    }
 
-    /* %result = call i8* @calloc(i32 1, i32 %val)
-     * -> formatCall("%result", LLVMType.IntPointer, "calloc",
-     * new List(){new LLVMMethodParam(LLVMType.Int, "1"), new LLVMMethodParam(LLVMType.Int, "%val")}) */
-    String formatCall(String register, LLVMType retType, List<LLVMMethodParam> params);
+    @Override
+    public String formatStore(LLVMType sourceType, String sourceRegister, String destRegister) {
+        return String.format("store %s %s, %s* %s",
+                formatType(sourceType), sourceRegister,
+                formatType(sourceType), destRegister);
+    }
 
-    /* %_%sum = add i32 %a, %b
-     * -> formatAdd("%_%sum", LLVMType.Int, "%a", "%b")
-     %_%sum = add i32 4, %var
-     * -> formatAdd("%_%sum", LLVMType.Int, "4", "%var")
-     * Same for and, sub, mul, xor
-     * */
-    String formatAdd(String register, LLVMType resultType, String first, String second);
-    String formatAnd(String register, LLVMType resultType, String first, String second);
-    String formatSub(String register, LLVMType resultType, String first, String second);
-    String formatMul(String register, LLVMType resultType, String first, String second);
-    String formatXOR(String register, LLVMType resultType, String first, String second);
+    @Override
+    public String formatLoad(String register, LLVMType valueType, String sourcePointer) {
+        return String.format("%s = load %s, %s* %s", register,
+                formatType(valueType), formatType(valueType), sourcePointer);
+    }
 
-    /* %case = icmp slt i32 %a, %b
-     * -> formatCompare("%case", ComparisonType.LessOrEquals, LLVMType.Int, "%a", "%b") */
-    String formatCompare(String register, ComparisonType compareType, LLVMType variableType,
-                         String register1, String register2);
+    @Override
+    public String formatCall(String register, LLVMType retType, List<LLVMMethodParam> params) {
+        return String.format("%s = call %s @calloc(%s)", register,
+                formatType(retType), formatParams(params));
+    }
 
-    /* br i1 %case, label %if, label %else
-    * -> formatConditionalBreak("%case", "if", "else")
-    * */
-    String formatConditionalBreak(String booleanRegister, String ifLabel, String elseLabel);
+    @Override
+    public String formatAdd(String register, LLVMType resultType, String first, String second) {
+        return String.format("%s = add %s %s, %s", register, formatType(resultType),
+                first, second);
+    }
 
-    /* br label %goto
-     * -> formatBreak("goto") */
-    String formatBreak(String label);
+    @Override
+    public String formatAnd(String register, LLVMType resultType, String first, String second) {
+        return String.format("%s = add %s %s, %s", register, formatType(resultType),
+                first, second);
+    }
 
-    /* label123:
-     * -> formatLabelName("label123") */
-    String formatLabelName(String labelName);
+    @Override
+    public String formatSub(String register, LLVMType resultType, String first, String second) {
+        return String.format("%s = sub %s %s, %s", register, formatType(resultType),
+                first, second);
+    }
 
-    /* %ptr = bitcast i32* %ptr2 to i8**
-     * -> formatLabelName("%ptr", LLVMType.IntPointer, "%ptr2", LLVMType.IntPointer2) */
-    String formatBitcast(String register, LLVMType fromType, String fromRegister, LLVMType toType);
+    @Override
+    public String formatMul(String register, LLVMType resultType, String first, String second) {
+        return String.format("%s = mul %s %s, %s", register, formatType(resultType),
+                first, second);
+    }
 
-    /* %ptr_idx = getelementptr i8, i8* %ptr, i32 %idx
-     * -> formatGetElementPtr("%ptr_idx", LLVMType.Byte, "%idx") */
-    String formatGetElementPtr(String register, LLVMType type, String pointerRegister, int index);
+    @Override
+    public String formatXOR(String register, LLVMType resultType, String first, String second) {
+        return String.format("%s = xor %s %s, %s", register, formatType(resultType),
+                first, second);
+    }
 
-    /* @.str = constant [12 x i8] c"Hello world\00"
-    * -> formatConstant(".str", "Hello world\00") */
-    String formatConstant(String register, String constantValue);
+    @Override
+    public String formatCompare(String register, ComparisonType compareType, LLVMType variableType, LLVMType type,
+                                String register1, String register2) {
+        return String.format("%s = icmp %s %s %s, %s",
+                register,
+                formatComparisonType(compareType),
+                formatType(type),
+                register1, register2);
+    }
 
-    /* TODO when we learn on vtables
-    @.vtable = global [2 x i8*] [i8* bitcast (i32 ()* @func1 to i8*), i8* bitcast (i8* (i32, i32*)* @func2 to i8*)]
-     * -> formatConstant("i8* bitcast (i32 ()* @func1 to i8*)", "i8* bitcast (i8* (i32, i32*)* @func2 to i8*)")*/
-    String formatGlobalVTable(List<String> table);
+    @Override
+    public String formatConditionalBreak(String booleanRegister, String ifLabel, String elseLabel) {
+        return String.format("br i1 %s, label %s, label %s", booleanRegister, ifLabel, elseLabel);
+    }
 
-    /* %c = phi i32 [%a, %lb1], [%b, %lb2]
-     * -> formatPhi("%c", "%a", "lb1", "%b", "lb2") */
-    String formatPhi(String register,
-                     String valueIfLabel1, String label1,
-                     String valueIfLabel2, String label2);
+    @Override
+    public String formatBreak(String label) {
+        return String.format("br label %s%s", "%", label);
+    }
+
+    @Override
+    public String formatLabelName(String labelName) {
+        return String.format("%s:", labelName);
+    }
+
+    @Override
+    public String formatBitcast(String register, LLVMType fromType, String fromRegister, LLVMType toType) {
+        return String.format("%s = bitcast %s* %s to %s*",
+                register, formatType(fromType),
+                fromRegister, formatType(toType));
+    }
+
+    // TODO when we learn about arrays
+    @Override
+    public String formatGetElementPtr(String register, LLVMType type, String pointerRegister, int index) {
+        return null;
+    }
+
+    @Override
+    public String formatConstant(String register, int length, LLVMType type, String constantValue) {
+        return String.format("@%s = constant [%d x %s] c%s", register, length, formatType(type), constantValue);
+    }
+
+    // TODO when we learn about them
+    @Override
+    public String formatGlobalVTable(List<String> table) {
+        return null;
+    }
+
+    @Override
+    public String formatPhi(String register, String valueIfLabel1, String label1, String valueIfLabel2, String label2) {
+        return String.format("%s = phi i32 [%s, %s%s], [%s, %s%s]",
+                register,
+                valueIfLabel1,
+                "%",
+                label1,
+                valueIfLabel2,
+                "%",
+                label2);
+    }
 }
