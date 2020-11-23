@@ -6,9 +6,9 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
     private String formatType(LLVMType type) {
         switch (type) {
             case Boolean:
-                break;
+                return "i1";
             case Byte:
-                break;
+                return "i8";
             case String:
                 break;
             case Int: return "i32";
@@ -88,7 +88,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
 
     @Override
     public String formatAnd(String register, LLVMType resultType, String first, String second) {
-        return String.format("%s = add %s %s, %s", register, formatType(resultType),
+        return String.format("%s = and %s %s, %s", register, formatType(resultType),
                 first, second);
     }
 

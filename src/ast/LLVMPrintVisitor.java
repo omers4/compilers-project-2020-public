@@ -1,5 +1,8 @@
 package ast;
 
+import LLVM.LLVMCommandFormatter;
+import LLVM.LLVMType;
+
 public class LLVMPrintVisitor implements Visitor {
     private StringBuilder builder = new StringBuilder();
 
@@ -7,6 +10,7 @@ public class LLVMPrintVisitor implements Visitor {
     private int registersCounter = 0;
     private int labelsCounter = 0;
     private String currentRegisterName;
+    private LLVMCommandFormatter formatter = new LLVMCommandFormatter();
 
     public String getString() {
         return builder.toString();
@@ -23,6 +27,24 @@ public class LLVMPrintVisitor implements Visitor {
 
     @Override
     public void visit(Program program) {
+        // Examples of usage:
+        builder.append(formatter.formatAlloca("%3", LLVMType.Boolean));
+        builder.append("\n");
+        builder.append(formatter.formatLoad("%3", LLVMType.Int,"%4"));
+        builder.append("\n");
+        builder.append(formatter.formatStore(LLVMType.Int, "%3","%4"));
+        builder.append("\n");
+
+        builder.append(formatter.formatAdd("%3", LLVMType.Int,"%4", "%5"));
+        builder.append("\n");
+        builder.append(formatter.formatAnd("%3", LLVMType.Int,"%4", "%5"));
+        builder.append("\n");
+        builder.append(formatter.formatSub("%3", LLVMType.Int,"%4", "%5"));
+        builder.append("\n");
+        builder.append(formatter.formatXOR("%3", LLVMType.Int,"%4", "%5"));
+        builder.append("\n");
+        builder.append(formatter.formatMul("%3", LLVMType.Int,"%4", "%5"));
+        builder.append("\n");
     }
 
     @Override
