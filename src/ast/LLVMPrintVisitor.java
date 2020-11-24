@@ -3,7 +3,7 @@ package ast;
 import LLVM.LLVMCommandFormatter;
 import LLVM.LLVMType;
 
-public class LLVMPrintVisitor implements Visitor {
+public class LLVMPrintVisitor implements IVisitorWithField<String> {
     private StringBuilder builder = new StringBuilder();
 
     private int indent = 0;
@@ -177,4 +177,9 @@ public class LLVMPrintVisitor implements Visitor {
 
     @Override
     public void visit(RefType t) {}
+
+    @Override
+    public String getField() {
+        return currentRegisterName;
+    }
 }
