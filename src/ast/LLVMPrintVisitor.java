@@ -160,21 +160,41 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
             case "*":
                 builder.append(formatter.formatMul( resultRegister, LLVMType.Int, register_e1, register_e2));
                 break;
-
-            case "&&":
-                builder.append(formatter.formatAnd( resultRegister, LLVMType.Boolean, register_e1, register_e2));
-                break;
-
             case "<":
                 builder.append(formatter.formatCompare( resultRegister, ComparisonType.Less , LLVMType.Boolean, register_e1, register_e2));
                 break;
         }
     }
 
-    // call to visitBinaryExpr
+    // Short-Circuit And
+    // Evaluating e1, If true, continuing; otherwise skipping, Evaluating e2, Joining using phi
     @Override
     public void visit(AndExpr e) {
-        visitBinaryExpr(e, "&&");
+        e.e1().accept(this);
+        String register_e1 = this.getField();
+
+        String andcond0 = getNextLabel(); // check result, short circuit if false
+        String andcond1 = getNextLabel(); // check e2
+        String andcond2 = getNextLabel(); // this label seems redundant, but this becomes useful when compiling expressions a && b && c
+        String andcond3 = getNextLabel(); // get appropriate value, depending on the predecessor block
+
+        builder.append(formatter.formatLabelName(andcond0));
+        builder.append(formatter.formatConditionalBreak(register_e1, andcond1, andcond3));
+
+        builder.append(formatter.formatLabelName(andcond1));
+        e.e2().accept(this);
+        String register_e2 = this.getField();
+        builder.append(formatter.formatBreak(andcond2));
+
+        builder.append(formatter.formatLabelName(andcond2));
+        builder.append(formatter.formatBreak(andcond3));
+
+        builder.append(formatter.formatLabelName(andcond3));
+        String resultRegister = getNextTmpRegister();
+        builder.append(formatter.formatPhi(resultRegister, "0", andcond0, register_e2, andcond2));
+
+        // set currentRegisterName
+        currentRegisterName = resultRegister;
     }
 
     // call to visitBinaryExpr
@@ -224,13 +244,16 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     /////////////////////Expression/////////////////////
 
-    // create int register with the value of the integer literal, set currentRegisterName.
+    // set currentRegisterName as the int value itself
     @Override
     public void visit(IntegerLiteralExpr e) {
+        currentRegisterName = Integer.toString(e.num());
+
+        /* create int register with the value of the integer literal, set currentRegisterName.
         int value = e.num();
         String resultRegister = getNextTmpRegister();
         currentRegisterName = resultRegister;
-        builder.append(formatter.formatAdd(resultRegister, LLVMType.Int,"0", Integer.toString(value)));
+        builder.append(formatter.formatAdd(resultRegister, LLVMType.Int,"0", Integer.toString(value)));*/
     }
 
     // create boolean register with the value 1, set currentRegisterName.
@@ -308,6 +331,12 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String nextTmpRegister = "%_" + Integer.toString(registersCounter);
         registersCounter++;
         return nextTmpRegister;
+    }
+
+    private String getNextLabel(){
+        String nextLabel = Integer.toString(labelsCounter);
+        labelsCounter++;
+        return nextLabel;
     }
 
 }
