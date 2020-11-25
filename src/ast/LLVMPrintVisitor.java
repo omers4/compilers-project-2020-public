@@ -22,11 +22,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append(str);
     }
 
-    private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
-        e.e1().accept(this);
-        e.e2().accept(this);
-    }
-
     //TODO: del examples
     public void examples(){
         // Examples of usage:
@@ -49,6 +44,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append("\n");
     }
 
+
     @Override
     public void visit(Program program) {
         program.mainClass().accept(this);
@@ -56,6 +52,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
             classdecl.accept(this);
         }
     }
+
+    /////////////////////Declaration/////////////////////
 
     @Override
     public void visit(ClassDecl classDecl) {
@@ -98,6 +96,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         varDecl.type().accept(this);
     }
 
+    /////////////////////Statement/////////////////////
+
     @Override
     public void visit(BlockStatement blockStatement) {
         for (var s : blockStatement.statements()) {
@@ -134,30 +134,72 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         assignArrayStatement.rv().accept(this);
     }
 
+    /////////////////////Binary Expression/////////////////////
+
+    // get registers of e1 and e2, and format the relevant operation.
+    private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
+
+        e.e1().accept(this);
+        String register_e1 = this.getField();
+
+        e.e2().accept(this);
+        String register_e2 = this.getField();
+
+        String resultRegister = getNextTmpRegister();
+        currentRegisterName = resultRegister;
+
+        switch (infixSymbol){
+            case "+":
+                builder.append(formatter.formatAdd( resultRegister, LLVMType.Int, register_e1, register_e2));
+                break;
+            case "-":
+                builder.append(formatter.formatSub( resultRegister, LLVMType.Int, register_e1, register_e2));
+                break;
+            case "*":
+                builder.append(formatter.formatMul( resultRegister, LLVMType.Int, register_e1, register_e2));
+                break;
+
+            case "&&":
+                builder.append(formatter.formatAnd( resultRegister, LLVMType.Boolean, register_e1, register_e2));
+                break;
+
+            case "<":
+                builder.append(formatter.formatCompare( resultRegister, ComparisonType.Less , LLVMType.Boolean, register_e1, register_e2));
+                break;
+        }
+    }
+
+    // call to visitBinaryExpr
     @Override
     public void visit(AndExpr e) {
         visitBinaryExpr(e, "&&");
     }
 
+    // call to visitBinaryExpr
     @Override
     public void visit(LtExpr e) {
         visitBinaryExpr(e, "<");;
     }
 
+    // call to visitBinaryExpr
     @Override
     public void visit(AddExpr e) {
         visitBinaryExpr(e, "+");;
     }
 
+    // call to visitBinaryExpr
     @Override
     public void visit(SubtractExpr e) {
         visitBinaryExpr(e, "-");
     }
 
+    // call to visitBinaryExpr
     @Override
     public void visit(MultExpr e) {
         visitBinaryExpr(e, "*");
     }
+
+    /////////////////////Array & Method Expression/////////////////////
 
     @Override
     public void visit(ArrayAccessExpr e) {
@@ -178,20 +220,36 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         }
     }
 
+    /////////////////////Expression/////////////////////
+
+    // create int register with the value of the integer literal, set currentRegisterName.
     @Override
     public void visit(IntegerLiteralExpr e) {
+        int value = e.num();
+        String resultRegister = getNextTmpRegister();
+        currentRegisterName = resultRegister;
+        builder.append(formatter.formatAdd(resultRegister, LLVMType.Int,"0", Integer.toString(value)));
     }
 
+    // create boolean register with the value 1, set currentRegisterName.
     @Override
     public void visit(TrueExpr e) {
+        String resultRegister = getNextTmpRegister();
+        currentRegisterName = resultRegister;
+        builder.append(formatter.formatAnd(resultRegister, LLVMType.Boolean,"1", "1"));
     }
 
+    // create boolean register with the value 0, set currentRegisterName.
     @Override
     public void visit(FalseExpr e) {
+        String resultRegister = getNextTmpRegister();
+        currentRegisterName = resultRegister;
+        builder.append(formatter.formatAnd(resultRegister, LLVMType.Boolean,"0", "0"));
     }
 
     @Override
     public void visit(IdentifierExpr e) {
+        // TODO: use RegisterAllocator for e.id() and set to currentRegisterName
     }
 
     public void visit(ThisExpr e) {
@@ -206,10 +264,19 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(NewObjectExpr e) {
     }
 
+    // create boolean register with the negative value of e, set currentRegisterName.
     @Override
     public void visit(NotExpr e) {
         e.e().accept(this);
+        String exprRegister = this.getField();
+        // assume exprRegister is boolean expression
+
+        String resultRegister = getNextTmpRegister();
+        currentRegisterName = resultRegister;
+        builder.append(formatter.formatSub(resultRegister, LLVMType.Boolean,"1", exprRegister));
     }
+
+    /////////////////////AstType/////////////////////
 
     @Override
     public void visit(IntAstType t) {
@@ -227,8 +294,18 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(RefType t) {
     }
 
+    /////////////////////Others/////////////////////
+
     @Override
     public String getField() {
         return currentRegisterName;
     }
+
+    // return string with %_<registersCounter> and add 1 to the counter
+    private String getNextTmpRegister(){
+        String nextTmpRegister = "%_" + Integer.toString(registersCounter);
+        registersCounter++;
+        return nextTmpRegister;
+    }
+
 }
