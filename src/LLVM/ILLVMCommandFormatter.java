@@ -47,7 +47,7 @@ public interface ILLVMCommandFormatter {
 
     /* %case = icmp slt i32 %a, %b
      * -> formatCompare("%case", ComparisonType.LessOrEquals, LLVMType.Int, "%a", "%b") */
-    String formatCompare(String register, ComparisonType compareType, LLVMType variableType,
+    String formatCompare(String register, ComparisonType compareType,
                          LLVMType type,
                          String register1, String register2);
 

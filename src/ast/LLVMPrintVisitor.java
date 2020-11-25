@@ -1,5 +1,6 @@
 package ast;
 
+import LLVM.ComparisonType;
 import LLVM.LLVMCommandFormatter;
 import LLVM.LLVMType;
 

@@ -24,6 +24,8 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
         switch (type) {
             case Equals:
                 return "eq";
+            case Less:
+                return "slt";
             case LessOrEquals:
                 return "sle";
             case GreatOrEquals:
@@ -111,7 +113,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
     }
 
     @Override
-    public String formatCompare(String register, ComparisonType compareType, LLVMType variableType, LLVMType type,
+    public String formatCompare(String register, ComparisonType compareType, LLVMType type,
                                 String register1, String register2) {
         return String.format("%s = icmp %s %s %s, %s",
                 register,
