@@ -148,6 +148,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String resultRegister = getNextTmpRegister();
         currentRegisterName = resultRegister;
 
+        // TODO: LLVMType according to register_e1,e2 types
+
         switch (infixSymbol){
             case "+":
                 builder.append(formatter.formatAdd( resultRegister, LLVMType.Int, register_e1, register_e2));
