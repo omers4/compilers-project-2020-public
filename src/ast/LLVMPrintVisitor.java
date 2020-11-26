@@ -105,11 +105,28 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         }
     }
 
+    // evaluating the condition - add labels and br
     @Override
     public void visit(IfStatement ifStatement) {
         ifStatement.cond().accept(this);
+        String condRegister = this.getField();
+
+        String if0 = getNextLabel(); // then case
+        String if1 = getNextLabel(); // else case
+        String if2 = getNextLabel(); // after else block
+
+        builder.append(formatter.formatConditionalBreak(condRegister, if0, if1));
+
+        builder.append(formatter.formatLabelName(if0));
         ifStatement.thencase().accept(this);
+        builder.append(formatter.formatBreak(if2));
+
+        builder.append(formatter.formatLabelName(if1));
         ifStatement.elsecase().accept(this);
+        builder.append(formatter.formatBreak(if2));
+
+        builder.append(formatter.formatLabelName(if2));
+
     }
 
     @Override
@@ -333,6 +350,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         return nextTmpRegister;
     }
 
+    // return string with <labelsCounter> and add 1 to the counter
     private String getNextLabel(){
         String nextLabel = Integer.toString(labelsCounter);
         labelsCounter++;
