@@ -108,13 +108,13 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     // evaluating the condition - add labels and br
     @Override
     public void visit(IfStatement ifStatement) {
-        ifStatement.cond().accept(this);
-        String condRegister = this.getField();
 
         String if0 = getNextLabel(); // then case
         String if1 = getNextLabel(); // else case
         String if2 = getNextLabel(); // after else block
 
+        ifStatement.cond().accept(this);
+        String condRegister = this.getField();
         builder.append(formatter.formatConditionalBreak(condRegister, if0, if1));
 
         builder.append(formatter.formatLabelName(if0));
@@ -129,10 +129,24 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     }
 
+    // evaluating the condition, end of body jump back to condition
     @Override
     public void visit(WhileStatement whileStatement) {
+
+        String while0 = getNextLabel(); // check condition
+        String while1 = getNextLabel(); // while body
+        String while2 = getNextLabel(); // after body block
+
+        builder.append(formatter.formatLabelName(while0));
         whileStatement.cond().accept(this);
+        String condRegister = this.getField();
+        builder.append(formatter.formatConditionalBreak(condRegister, while1, while2));
+
+        builder.append(formatter.formatLabelName(while1));
         whileStatement.body().accept(this);
+        builder.append(formatter.formatBreak(while0));
+
+        builder.append(formatter.formatLabelName(while2));
     }
 
     @Override

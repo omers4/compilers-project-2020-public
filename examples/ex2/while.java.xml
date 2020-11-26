@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+    <mainclass>
+        <name>Main</name>
+        <argsName>a</argsName>
+        <mainStatement>
+            <sysout>
+                <arg>
+                    <call>
+                        <ownerExpr>
+                            <new-object>
+<classId>Simple</classId>
+                            </new-object>
+                        </ownerExpr>
+                        <methodId>bar</methodId>
+                        <actuals/>
+                    </call>
+                </arg>
+            </sysout>
+        </mainStatement>
+    </mainclass>
+    <classdecls>
+        <classdecl>
+            <name>Simple</name>
+            <fields/>
+            <methoddecls>
+                <methoddecl>
+                    <lineNumber>20</lineNumber>
+                    <returnType>
+                        <int/>
+                    </returnType>
+                    <name>bar</name>
+                    <formals/>
+                    <vardecls/>
+                    <body>
+
+                        <while>
+                            <cond>
+<lt>
+    <e1>
+        <int-literal>
+            <num>1</num>
+        </int-literal>
+    </e1>
+    <e2>
+        <int-literal>
+            <num>2</num>
+        </int-literal>
+    </e2>
+</lt>
+                            </cond>
+                            <body>
+<sysout>
+    <arg>
+        <subtract>
+            <e1>
+                <int-literal>
+                    <num>100</num>
+                </int-literal>
+            </e1>
+            <e2>
+                <int-literal>
+                    <num>50</num>
+                </int-literal>
+            </e2>
+        </subtract>
+    </arg>
+</sysout>
+                            </body>
+
+                        </while>
+
+
+                    </body>
+                    <ret>
+                        <int-literal>
+                            <num>0</num>
+                        </int-literal>
+                    </ret>
+                </methoddecl>
+            </methoddecls>
+        </classdecl>
+    </classdecls>
+</program>
