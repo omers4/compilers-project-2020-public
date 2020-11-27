@@ -308,7 +308,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(IdentifierExpr e) {
-        // TODO: use RegisterAllocator for e.id() and set to currentRegisterName
     }
 
     public void visit(ThisExpr e) {
@@ -347,6 +346,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(IntArrayAstType t) {
+        // Allocate space on stack for the array reference (it's a local variable)
+        // VarDecl -> IntArrayAstType // %x = alloca i32*
     }
 
     @Override

@@ -14,6 +14,8 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
             case Int: return "i32";
             case IntPointer:
                 break;
+            case Void:
+                return "void";
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }
@@ -78,9 +80,9 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
     }
 
     @Override
-    public String formatCall(String register, LLVMType retType, List<LLVMMethodParam> params) {
-        return String.format("%s = call %s @calloc(%s) \n", register,
-                formatType(retType), formatParams(params));
+    public String formatCall(String register, LLVMType retType, String methodName ,List<LLVMMethodParam> params) {
+        return String.format("%s = call %s @%s(%s) \n", register,
+                formatType(retType), methodName, formatParams(params));
     }
 
     @Override
