@@ -42,7 +42,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
             paramsString.append(String.format("%s %s,", param.getType(), param.getName()));
         }
         paramsString.substring(0, paramsString.length()-1);
-        paramsString.append(" \n");
+        //paramsString.append(" \n");
         return paramsString.toString();
     }
 
