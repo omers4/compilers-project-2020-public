@@ -81,8 +81,17 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
 
     @Override
     public String formatCall(String register, LLVMType retType, String methodName ,List<LLVMMethodParam> params) {
+        String paramsString;
+        if (params != null)
+            paramsString = formatParams(params);
+        else
+            paramsString = "";
+
+        if (retType == LLVMType.Void) {
+            return String.format("call %s @%s(%s) \n", formatType(retType), methodName, paramsString);
+        }
         return String.format("%s = call %s @%s(%s) \n", register,
-                formatType(retType), methodName, formatParams(params));
+                formatType(retType), methodName, paramsString);
     }
 
     @Override
