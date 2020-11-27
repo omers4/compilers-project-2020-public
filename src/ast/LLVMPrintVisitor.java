@@ -1,17 +1,15 @@
 package ast;
 
-import LLVM.ComparisonType;
-import LLVM.LLVMCommandFormatter;
-import LLVM.LLVMType;
+import LLVM.*;
 
 public class LLVMPrintVisitor implements IVisitorWithField<String> {
     private StringBuilder builder = new StringBuilder();
 
     private int indent = 0;
-    private int registersCounter = 0;
     private int labelsCounter = 0;
     private String currentRegisterName;
     private LLVMCommandFormatter formatter = new LLVMCommandFormatter();
+    private LLVMRegisterAllocator registerAllocator;
 
     public String getString() {
         return builder.toString();
@@ -48,6 +46,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(Program program) {
         builder.append(getHelperFunctions());
+
+        registerAllocator = new LLVMRegisterAllocator(program);
 
         program.mainClass().accept(this);
         for (ClassDecl classdecl : program.classDecls()) {
@@ -178,7 +178,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         e.e2().accept(this);
         String register_e2 = this.getField();
 
-        String resultRegister = getNextTmpRegister();
+        String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
 
         // TODO: LLVMType according to register_e1,e2 types
@@ -223,7 +223,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append(formatter.formatBreak(andcond3));
 
         builder.append(formatter.formatLabelName(andcond3));
-        String resultRegister = getNextTmpRegister();
+        String resultRegister = registerAllocator.allocateNewTempRegister();
         builder.append(formatter.formatPhi(resultRegister, "0", andcond0, register_e2, andcond2));
 
         // set currentRegisterName
@@ -277,14 +277,15 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     /////////////////////Expression/////////////////////
 
-    // set currentRegisterName as the int value itself
+    // set currentRegisterName to the int value itself
     @Override
     public void visit(IntegerLiteralExpr e) {
         currentRegisterName = Integer.toString(e.num());
 
-        /* create int register with the value of the integer literal, set currentRegisterName.
+        /* TODO: del?
+        // create int register with the value of the integer literal, set currentRegisterName.
         int value = e.num();
-        String resultRegister = getNextTmpRegister();
+        String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
         builder.append(formatter.formatAdd(resultRegister, LLVMType.Int,"0", Integer.toString(value)));*/
     }
@@ -292,7 +293,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     // create boolean register with the value 1, set currentRegisterName.
     @Override
     public void visit(TrueExpr e) {
-        String resultRegister = getNextTmpRegister();
+        String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
         builder.append(formatter.formatAnd(resultRegister, LLVMType.Boolean,"1", "1"));
     }
@@ -300,7 +301,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     // create boolean register with the value 0, set currentRegisterName.
     @Override
     public void visit(FalseExpr e) {
-        String resultRegister = getNextTmpRegister();
+        String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
         builder.append(formatter.formatAnd(resultRegister, LLVMType.Boolean,"0", "0"));
     }
@@ -329,7 +330,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String exprRegister = this.getField();
         // assume exprRegister is boolean expression
 
-        String resultRegister = getNextTmpRegister();
+        String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
         builder.append(formatter.formatSub(resultRegister, LLVMType.Boolean,"1", exprRegister));
     }
@@ -357,13 +358,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public String getField() {
         return currentRegisterName;
-    }
-
-    // return string with %_<registersCounter> and add 1 to the counter
-    private String getNextTmpRegister(){
-        String nextTmpRegister = "%_" + Integer.toString(registersCounter);
-        registersCounter++;
-        return nextTmpRegister;
     }
 
     // return string with <labelsCounter> and add 1 to the counter

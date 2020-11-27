@@ -37,6 +37,6 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
     @Override
     public String allocateNewTempRegister() {
         ++_counter;
-        return String.valueOf(_counter);
+        return "%_" + String.valueOf(_counter);
     }
 }
