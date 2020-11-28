@@ -213,7 +213,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(AssignStatement assignStatement) {
         String dest = registerAllocator.allocateAddressRegister(assignStatement.lv(), assignStatement);
         assignStatement.rv().accept(this);
-        // TODO
+        // TODO change LLVMType.Int when we have a type field in symbol table
         appendWithIndent(formatter.formatStore(LLVMType.Int, currentRegisterName, dest));
     }
 
@@ -367,7 +367,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String tempRegister = registerAllocator.allocateNewTempRegister();
         String resultRegister = registerAllocator.allocateAddressRegister(e.id(), e);
         currentRegisterName = tempRegister;
-        // TODO type
+        // TODO change LLVMType.Int when we have a type field in symbol table
         appendWithIndent(formatter.formatLoad(tempRegister, LLVMType.Int, resultRegister));
     }
 
