@@ -83,7 +83,9 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
     @Override
     public void visit(FormalArg formalArg) {
-        _astToSymbolTable.addMapping(formalArg, _symbolTableHierarchy.peek());
+        SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
+        _astToSymbolTable.addMapping(formalArg, curContextSymbolTable);
+        curContextSymbolTable.addSymbol(formalArg.name(), new SymbolTableItem(formalArg.name(), SymbolType.Var));
         formalArg.type().accept(this);
     }
 

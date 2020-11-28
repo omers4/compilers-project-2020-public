@@ -118,7 +118,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(FormalArg formalArg) {
 
 //       TODO that is not working String formalArgRegister = registerAllocator.allocateAddressRegister(formalArg.name(), formalArg);
-
+        String reg_name = registerAllocator.allocateAddressRegister(formalArg.name(), formalArg);
         formalArg.type().accept(this);
         appendWithIndent(formatter.formatAlloca(formatter.formatRegisterName(formalArg.name()), LLVMType.Int)); //TODO real type
         appendWithIndent(formatter.formatStore(LLVMType.Int, formatter.formatRegisterName(formatter.formatFormalArgName(formalArg.name())), formatter.formatRegisterName(formalArg.name())));

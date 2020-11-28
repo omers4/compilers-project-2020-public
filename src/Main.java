@@ -24,8 +24,6 @@ public class Main {
             var outFile = new PrintWriter(outfilename);
 
             try {
-                LLVMRegisterAllocator allocator = new LLVMRegisterAllocator(prog);
-
                 if (action.equals("marshal")) {
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
                     xmlSerializer.serialize(prog, outfilename);
