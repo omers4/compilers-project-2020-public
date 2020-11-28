@@ -140,10 +140,14 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
                 fromRegister, toType.toString());
     }
 
-    // TODO when we learn about arrays
     @Override
-    public String formatGetElementPtr(String register, LLVMType type, String pointerRegister, int index) {
-        return null;
+    public String formatGetElementPtr(String register, LLVMType type, String pointerRegister, int rowIndex, int columnIndex) {
+        String secondIndex = "";
+        if (columnIndex > -1) {
+            secondIndex = String.format(", i32 %d", columnIndex);
+        }
+        return String.format("%s = getelementptr %s, %s* %s, i32 %d%s",
+                register, type, type, pointerRegister, rowIndex, secondIndex);
     }
 
     @Override
