@@ -122,9 +122,9 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(MethodDecl methodDecl) {
         String methodName = String.format("%s.%s", currentClass.name(), methodDecl.name());
         var params = new ArrayList<LLVMMethodParam>();
-        params.add(new LLVMMethodParam(LLVMType.Address, "this"));
+        params.add(new LLVMMethodParam(LLVMType.Address, "%this"));
         for (var formalArg: methodDecl.formals()) {
-            params.add(new LLVMMethodParam(ASTypeToLLVMType(formalArg.type()), formatter.formatFormalArgName(formalArg.name())));
+            params.add(new LLVMMethodParam(ASTypeToLLVMType(formalArg.type()), formatter.formatRegisterName(formatter.formatFormalArgName(formalArg.name()))));
         }
 
         builder.append(formatter.formatMethodDefinition(ASTypeToLLVMType(methodDecl.returnType()), methodName, params));
