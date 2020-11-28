@@ -23,7 +23,7 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
             SymbolTableItem item = symbolTable.get(name);
             if (null == item.getRegisterId()) {
                 ++_counter;
-                item.setRegisterId(String.valueOf(_counter));
+                item.setRegisterId("%_" + name + String.valueOf(_counter));
             }
 
             return item.getRegisterId();
