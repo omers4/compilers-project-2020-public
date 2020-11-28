@@ -2,7 +2,7 @@ package ast;
 
 import LLVM.*;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LLVMPrintVisitor implements IVisitorWithField<String> {
@@ -312,7 +312,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(IdentifierExpr e) {
-        // TODO: use RegisterAllocator for e.id() and set to currentRegisterName
     }
 
     public void visit(ThisExpr e) {
@@ -320,7 +319,51 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(NewIntArrayExpr e) {
+        // Already allocate space on stack: VarDecl -> IntArrayAstType
+
+        // Check that the size of the array is not negative
         e.lengthExpr().accept(this);
+        String length = getField();
+        String condRegister = registerAllocator.allocateNewTempRegister();
+        builder.append(formatter.formatCompare( condRegister, ComparisonType.Less , LLVMType.Boolean, length, "0"));
+
+        String arr_alloc0 = getNextLabel();
+        String arr_alloc1 = getNextLabel();
+
+        builder.append(formatter.formatConditionalBreak(condRegister, arr_alloc0, arr_alloc1));
+
+        //  Size was negative, throw negative size exception
+        builder.append(formatter.formatLabelName(arr_alloc0));
+        builder.append(formatter.formatCall("", LLVMType.Void, "throw_oob", null));
+        builder.append(formatter.formatBreak(arr_alloc1));
+
+        // All ok, we can proceed with the allocation
+        builder.append(formatter.formatLabelName(arr_alloc1));
+
+        // Calculate size bytes to be allocated for the array (new arr[sz] -> add i32 1, sz)
+        // We need an additional int worth of space, to store the size of the array.
+        String sizeRegister = registerAllocator.allocateNewTempRegister();
+        builder.append(formatter.formatAdd( sizeRegister, LLVMType.Int, length, "1"));
+
+        // Allocate sz + 1 integers (4 bytes each)
+        String allocateRegister = registerAllocator.allocateNewTempRegister();
+        List<LLVMMethodParam> params = Arrays.asList(
+                new LLVMMethodParam(LLVMType.Int,"4"),
+                new LLVMMethodParam(LLVMType.Int,sizeRegister));
+        //builder.append(formatter.formatCall(allocateRegister, "i8*", "calloc", params));
+
+        // Cast the returned pointer
+        String castedRegister = registerAllocator.allocateNewTempRegister();
+        //builder.append(formatter.formatBitcast(castedRegister, "i8*", allocateRegister, "i32*"));
+
+        // Store the size of the array in the first position of the arra
+        builder.append(formatter.formatStore(LLVMType.Int, length, castedRegister));
+
+        // This concludes the array allocation (new int[2])
+        // Assign the array pointer to x
+        // store i32* %_3, i32** %x
+        // TODO: WHERE?
+
     }
 
     @Override
@@ -366,6 +409,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(IntArrayAstType t) {
+        // Allocate space on stack for the array reference (it's a local variable)
+        // VarDecl -> IntArrayAstType // %x = alloca i32*
     }
 
     @Override

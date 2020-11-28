@@ -31,7 +31,7 @@ public interface ILLVMCommandFormatter {
     /* %result = call i8* @calloc(i32 1, i32 %val)
      * -> formatCall("%result", LLVMType.IntPointer, "calloc",
      * new List(){new LLVMMethodParam(LLVMType.Int, "1"), new LLVMMethodParam(LLVMType.Int, "%val")}) */
-    String formatCall(String register, LLVMType retType, List<LLVMMethodParam> params);
+    String formatCall(String register, LLVMType retType, String methodName, List<LLVMMethodParam> params);
 
     /* %_%sum = add i32 %a, %b
      * -> formatAdd("%_%sum", LLVMType.Int, "%a", "%b")
