@@ -6,5 +6,6 @@ public enum LLVMType {
     String,
     Int,
     IntPointer,
+    Address,
     Void
 }

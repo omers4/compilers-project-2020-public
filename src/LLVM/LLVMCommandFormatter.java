@@ -9,6 +9,8 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
                 return "i1";
             case Byte:
                 return "i8";
+            case Address:
+                return "i8*";
             case String:
                 break;
             case Int: return "i32";
@@ -39,9 +41,11 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
     private String formatParams(List<LLVMMethodParam> params) {
         StringBuilder paramsString = new StringBuilder();
         for (var param : params) {
-            paramsString.append(String.format("%s %s,", param.getType(), param.getName()));
+            paramsString.append(String.format("%s %s, ", formatType(param.getType()), param.getName()));
         }
-        paramsString.substring(0, paramsString.length()-1);
+        if (!params.isEmpty()) {
+            return paramsString.substring(0, paramsString.length()-2);
+        }
         //paramsString.append(" \n");
         return paramsString.toString();
     }
@@ -183,5 +187,14 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
                 valueIfLabel2,
                 "%",
                 label2);
+    }
+
+    @Override
+    public String formatRegisterName(String register) {
+        return String.format("%s%s", "%", register);
+    }
+
+    public String formatFormalArgName(String formalArg) {
+        return String.format(".%s", formalArg);
     }
 }

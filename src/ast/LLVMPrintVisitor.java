@@ -2,6 +2,7 @@ package ast;
 
 import LLVM.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,6 +14,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     private String currentRegisterName;
     private LLVMCommandFormatter formatter = new LLVMCommandFormatter();
     private LLVMRegisterAllocator registerAllocator;
+    private ClassDecl currentClass;
 
     public String getString() {
         return builder.toString();
@@ -62,6 +64,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(ClassDecl classDecl) {
+        currentClass = classDecl;
         for (var fieldDecl : classDecl.fields()) {
             fieldDecl.accept(this);
         }
@@ -72,11 +75,26 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(MainClass mainClass) {
+        builder.append(formatter.formatMethodDefinition(LLVMType.Int, "main", new ArrayList<>()));
+        indent++;
         mainClass.mainStatement().accept(this);
+        indent--;
+        builder.append("}\n\n");
     }
 
     @Override
     public void visit(MethodDecl methodDecl) {
+        String methodName = String.format("%s.%s", currentClass.name(), methodDecl.name());
+        var params = new ArrayList<LLVMMethodParam>();
+        params.add(new LLVMMethodParam(LLVMType.Address, "this"));
+        for (var formalArg: methodDecl.formals()) {
+            // TODO put correct type
+            params.add(new LLVMMethodParam(LLVMType.Int, formatter.formatFormalArgName(formalArg.name())));
+        }
+
+        // TODO put correct ret type
+        builder.append(formatter.formatMethodDefinition(LLVMType.Int, methodName, params));
+        indent++;
 
         methodDecl.returnType().accept(this);
         for (var formal : methodDecl.formals()) {
@@ -89,11 +107,19 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
             stmt.accept(this);
         }
         methodDecl.ret().accept(this);
+
+        indent--;
+        builder.append("}\n\n");
     }
 
     @Override
     public void visit(FormalArg formalArg) {
+
+//       TODO that is not working String formalArgRegister = registerAllocator.allocateAddressRegister(formalArg.name(), formalArg);
+
         formalArg.type().accept(this);
+        appendWithIndent(formatter.formatAlloca(formatter.formatRegisterName(formalArg.name()), LLVMType.Int)); //TODO real type
+        appendWithIndent(formatter.formatStore(LLVMType.Int, formatter.formatRegisterName(formatter.formatFormalArgName(formalArg.name())), formatter.formatRegisterName(formalArg.name())));
     }
 
     @Override

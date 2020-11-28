@@ -86,4 +86,7 @@ public interface ILLVMCommandFormatter {
     String formatPhi(String register,
                      String valueIfLabel1, String label1,
                      String valueIfLabel2, String label2);
+
+    String formatRegisterName(String register);
+    String formatFormalArgName(String formalArg);
 }
