@@ -2,12 +2,14 @@ package LLVM;
 
 import ast.*;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
 
     private IAstToSymbolTable _astToSymbolTable;
     private int _counter;
+    private Map<String,String> _classIDToVTable;
 
     public LLVMRegisterAllocator(IAstToSymbolTable symbolTable) {
         _astToSymbolTable = symbolTable;
@@ -36,5 +38,16 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
     public String allocateNewTempRegister() {
         ++_counter;
         return "%_" + String.valueOf(_counter);
+    }
+
+    @Override
+    public String allocateVTableRegister(String classID) {
+        String register = _classIDToVTable.get(classID);
+        if (null != register)
+            return register;
+
+        String newRegisterID = "@." + classID + "_vtable";
+        _classIDToVTable.put(classID, newRegisterID);
+        return newRegisterID;
     }
 }

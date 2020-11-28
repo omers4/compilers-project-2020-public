@@ -2,15 +2,12 @@ package ast;
 
 import LLVM.*;
 
-import java.util.HashSet;
-import java.util.Set;
+public class LLVMPreProcessVisitor implements IVisitorWithField<VTableUtils> {
 
-public class LLVMPreProcessVisitor implements Visitor {
-
-    private ObjectsVTable vTable;
+    private VTableUtils vTable;
 
     public LLVMPreProcessVisitor() {
-        vTable = new ObjectsVTable();
+        vTable = new VTableUtils();
     }
 
     private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
@@ -31,7 +28,6 @@ public class LLVMPreProcessVisitor implements Visitor {
         if (classDecl.superName() != null) {
 
         }
-
 
         for (var fieldDecl : classDecl.fields()) {
             fieldDecl.accept(this);
@@ -216,5 +212,10 @@ public class LLVMPreProcessVisitor implements Visitor {
     @Override
     public void visit(RefType t) {
 
+    }
+
+    @Override
+    public VTableUtils getField() {
+        return vTable;
     }
 }

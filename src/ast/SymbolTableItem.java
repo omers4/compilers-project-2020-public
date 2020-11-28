@@ -1,11 +1,14 @@
 package ast;
 
+import LLVM.ObjectVTable;
+
 public class SymbolTableItem {
 
     private String _id;
     private SymbolType _kind;
     private String _registerAddr;
     private AstType _type;
+    private ObjectVTable _vTable;
 
     public SymbolTableItem(String id, SymbolType kind, AstType type) {
         this._id = id;
