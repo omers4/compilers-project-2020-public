@@ -17,6 +17,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     private String currentRegisterName;
     private LLVMCommandFormatter formatter = new LLVMCommandFormatter();
     private LLVMRegisterAllocator registerAllocator;
+    private VTableUtils vTable;
     private ClassDecl currentClass;
     private ObjectsVTable vTable;
 
@@ -463,6 +464,38 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         allocationParams.add(new LLVMMethodParam(LLVMType.Int,"1"));
         allocationParams.add(new LLVMMethodParam(LLVMType.Int, Integer.toString(classSize)));
         formatter.formatCall(objectRegister, LLVMType.Void, CALLOC, allocationParams);
+
+//        ; Next we need to set the vtable pointer to point to the correct vtable (Base_vtable)
+//        ; First we bitcast the object pointer from i8* to i8***
+//        ; This is done because:
+//        ;   -> The vtable stores values of type i8*.
+//        ;   -> Thus, a pointer that points to the start of the vtable (equivalently at the first entry
+//        ;      of the vtable) must have type i8**.
+//        ;   -> Thus, to set the vtable pointer at the start of the object, we need to have its address
+//        ;      (first byte of the object) in a register of type i8***
+//        ;		- it's a pointer to a location where we will be storing i8**.
+        // %_1 = bitcast i8* %_0 to i8***
+        String bitcastRegister = registerAllocator.allocateNewTempRegister();
+        formatter.formatBitcast(bitcastRegister, LLVMType.Void,objectRegister, LLVMType.Void); // TODO: Change when formattar enables
+
+
+//        ; Get the address of the first element of the Base_vtable
+//                ; The getelementptr arguments are as follows:
+//        ;   * The first argument is the type of elements our Base_vtable ptr points to.
+//        ;   * The second argument is the Base_vtable ptr.
+//        ;   * The third and fourth arguments are indexes
+//        ;; (alternative to getelementpr: %_2 = bitcast [2 x i8*]* @.Base_vtable to i8**)
+        // %_2 = getelementptr [2 x i8*], [2 x i8*]* @.Base_vtable, i32 0, i32 0
+        String elementPrtRegister = registerAllocator.allocateNewTempRegister();
+        formatter.formatGetElementPtr(elementPrtRegister, LLVMType.IntPointer, objectRegister, 0); // TODO: Change when formattar enables
+
+//        ; Set the vtable to the correct address.
+//                store i8** %_2, i8*** %_1
+        formatter.formatStore(LLVMType.IntPointer, elementPrtRegister, bitcastRegister); // TODO: Change when formattar enables
+
+//        ; Store the address of the new object on the stack (var b), as a byte array (i8*).
+//                store i8* %_0, i8** %b
+        formatter.formatStore(LLVMType.Void, objectRegister, bitcastRegister);
     }
 
     // create boolean register with the negative value of e, set currentRegisterName.

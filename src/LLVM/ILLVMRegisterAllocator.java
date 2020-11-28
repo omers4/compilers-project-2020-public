@@ -18,4 +18,7 @@ public interface ILLVMRegisterAllocator {
     * for example %5 = add nsw i 32 3 , 4 */
     String allocateNewTempRegister();
 
+
+    String allocateVTableRegister(String classID);
+
 }
