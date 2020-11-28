@@ -85,7 +85,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
     public void visit(FormalArg formalArg) {
         SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
         _astToSymbolTable.addMapping(formalArg, curContextSymbolTable);
-        curContextSymbolTable.addSymbol(formalArg.name(), new SymbolTableItem(formalArg.name(), SymbolType.Var));
+        curContextSymbolTable.addSymbol(formalArg.name(), new SymbolTableItem(formalArg.name(), SymbolType.Var, formalArg.type()));
         formalArg.type().accept(this);
     }
 
@@ -95,7 +95,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         _astToSymbolTable.addMapping(varDecl, _symbolTableHierarchy.peek());
 
         // Add the current variable to the current Symbol Table representing its scope
-        curContextSymbolTable.addSymbol(varDecl.name(), new SymbolTableItem(varDecl.name(), SymbolType.Var));
+        curContextSymbolTable.addSymbol(varDecl.name(), new SymbolTableItem(varDecl.name(), SymbolType.Var, varDecl.type()));
         varDecl.type().accept(this);
     }
 
