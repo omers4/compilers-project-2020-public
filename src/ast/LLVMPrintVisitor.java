@@ -50,6 +50,16 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     //TODO: del examples
     public void examples(){
         // Examples of usage:
+        var a = new ArrayList<LLVMMethodParam>();
+        a.add(new LLVMMethodParam(LLVMType.Boolean, "var1"));
+        var t = LLVMType.Int;
+        t.setLength(5);
+        a.add(new LLVMMethodParam(t, "var2"));
+        LLVMMethodSignature sig = new LLVMMethodSignature("@TV.Start", LLVMType.Int, a);
+        var sigs = new ArrayList<LLVMMethodSignature>();
+        sigs.add(sig);
+        builder.append(formatter.formatGlobalVTable("@.TV_vtable", sigs));
+
         builder.append(formatter.formatAlloca("%3", LLVMType.Boolean));
         builder.append("\n");
         builder.append(formatter.formatLoad("%3", LLVMType.Int,"%4"));
@@ -213,8 +223,9 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(AssignStatement assignStatement) {
         String dest = registerAllocator.allocateAddressRegister(assignStatement.lv(), assignStatement);
         assignStatement.rv().accept(this);
-        // TODO change LLVMType.Int when we have a type field in symbol table
-        appendWithIndent(formatter.formatStore(LLVMType.Int, currentRegisterName, dest));
+        var symbolTableOfStmt = symbolTable.getSymbolTable(assignStatement);
+        var symbolTableEntry = symbolTableOfStmt.get(assignStatement.lv());
+        appendWithIndent(formatter.formatStore(ASTypeToLLVMType(symbolTableEntry.getType()), currentRegisterName, dest));
     }
 
     @Override
@@ -325,10 +336,20 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(MethodCallExpr e) {
-        e.ownerExpr().accept(this);
+        ArrayList<LLVMMethodParam> actuals = new ArrayList<>();
+        // TODO resolve the method we are calling
+
+        e.ownerExpr().accept(this);  // can be this.foo() (new A()).foo x.foo
+        String methodLocation = currentRegisterName;
         for (Expr arg : e.actuals()) {
             arg.accept(this);
+            // TODO type - once we resolve the method
+            actuals.add(new LLVMMethodParam(LLVMType.Int, currentRegisterName));
         }
+        String callResult = registerAllocator.allocateNewTempRegister();
+        currentRegisterName = callResult;
+        // TODO the real ret type, the real method location - once we resolve the method
+        appendWithIndent(formatter.formatCall(callResult, LLVMType.Int, methodLocation, actuals));
     }
 
     /////////////////////Expression/////////////////////
@@ -367,8 +388,9 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String tempRegister = registerAllocator.allocateNewTempRegister();
         String resultRegister = registerAllocator.allocateAddressRegister(e.id(), e);
         currentRegisterName = tempRegister;
-        // TODO change LLVMType.Int when we have a type field in symbol table
-        appendWithIndent(formatter.formatLoad(tempRegister, LLVMType.Int, resultRegister));
+        var symbolTableOfStmt = symbolTable.getSymbolTable(e);
+        var symbolTableEntry = symbolTableOfStmt.get(e.id());
+        appendWithIndent(formatter.formatLoad(tempRegister, ASTypeToLLVMType(symbolTableEntry.getType()), resultRegister));
     }
 
     public void visit(ThisExpr e) {

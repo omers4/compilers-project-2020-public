@@ -1,5 +1,6 @@
 package LLVM;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LLVMCommandFormatter implements ILLVMCommandFormatter {
@@ -146,7 +147,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
         if (columnIndex > -1) {
             secondIndex = String.format(", i32 %d", columnIndex);
         }
-        return String.format("%s = getelementptr %s, %s* %s, i32 %d%s",
+        return String.format("%s = getelementptr %s, %s* %s, i32 %d%s\n",
                 register, type, type, pointerRegister, rowIndex, secondIndex);
     }
 
@@ -155,10 +156,17 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
         return String.format("@%s = constant [%d x %s] c%s \n", register, length, type.toString(), constantValue);
     }
 
-    // TODO when vtables objects will be implemented
     @Override
-    public String formatGlobalVTable(List<String> table) {
-        return null;
+    public String formatGlobalVTable(String globalVtableName, List<LLVMMethodSignature> signatures) {
+        List<String> signaturesStrings = new ArrayList<>();
+        for (var sig : signatures) {
+            signaturesStrings.add(sig.toString());
+        }
+
+        return String.format("%s = global [%d x i8*] [%s]\n",
+                globalVtableName,
+                signatures.size(),
+                String.join(", ", signaturesStrings));
     }
 
     @Override

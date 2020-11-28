@@ -76,10 +76,9 @@ public interface ILLVMCommandFormatter {
     * -> formatConstant(".str", 12, LLVMType.Byte, "Hello world\00") */
     String formatConstant(String register, int length, LLVMType type, String constantValue);
 
-    /* TODO when we learn on vtables
-    @.vtable = global [2 x i8*] [i8* bitcast (i32 ()* @func1 to i8*), i8* bitcast (i8* (i32, i32*)* @func2 to i8*)]
-     * -> formatConstant("i8* bitcast (i32 ()* @func1 to i8*)", "i8* bitcast (i8* (i32, i32*)* @func2 to i8*)")*/
-    String formatGlobalVTable(List<String> table);
+    /* @.vtable = global [2 x i8*] [i8* bitcast (i32 ()* @func1 to i8*), i8* bitcast (i8* (i32, i32*)* @func2 to i8*)]
+     * -> formatConstant("@.vtable", {new LLVMMethodSignature("@A.foo", LLVMType.Int, null)})*/
+    String formatGlobalVTable(String globalVtableName, List<LLVMMethodSignature> signatures);
 
     /* %c = phi i32 [%a, %lb1], [%b, %lb2]
      * -> formatPhi("%c", "%a", "lb1", "%b", "lb2") */
