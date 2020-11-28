@@ -142,12 +142,12 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
     }
 
     @Override
-    public String formatGetElementPtr(String register, LLVMType type, String pointerRegister, int rowIndex, int columnIndex) {
+    public String formatGetElementPtr(String register, LLVMType type, String pointerRegister, String rowIndex, String columnIndex) {
         String secondIndex = "";
-        if (columnIndex > -1) {
-            secondIndex = String.format(", i32 %d", columnIndex);
+        if (columnIndex != "") {
+            secondIndex = String.format(", i32 %s", columnIndex);
         }
-        return String.format("%s = getelementptr %s, %s* %s, i32 %d%s\n",
+        return String.format("%s = getelementptr %s, %s* %s, i32 %s%s\n",
                 register, type, type, pointerRegister, rowIndex, secondIndex);
     }
 
