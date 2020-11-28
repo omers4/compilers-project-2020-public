@@ -216,9 +216,13 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append(formatter.formatLabelName(while2));
     }
 
+    // call print int
     @Override
     public void visit(SysoutStatement sysoutStatement) {
         sysoutStatement.arg().accept(this);
+        String arg = getField();
+        List<LLVMMethodParam> params = Arrays.asList(new LLVMMethodParam(LLVMType.Int, arg));
+        appendWithIndent(formatter.formatCall("", LLVMType.Void, "print_int", params));
     }
 
     @Override
@@ -231,10 +235,28 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         appendWithIndent(formatter.formatStore(ASTypeToLLVMType(symbolTableEntry.getType()), currentRegisterName, dest));
     }
 
+    // implements the array store arr[index] = rv
+    // calls access_array
     @Override
     public void visit(AssignArrayStatement assignArrayStatement) {
+
+        // Load the address of the array
+        String array = registerAllocator.allocateAddressRegister(assignArrayStatement.lv(), assignArrayStatement);
+        String addressArray = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatLoad(addressArray, LLVMType.IntPointer, array));
+
+        // get accessPtrRegister
         assignArrayStatement.index().accept(this);
+        String index = getField();
+        String accessPtrRegister = access_array(index, addressArray);
+
+        // get rv
         assignArrayStatement.rv().accept(this);
+        String rvRegister = getField();
+
+        // store rv to address (accessPtrRegister)
+        appendWithIndent(formatter.formatStore(LLVMType.Int, rvRegister, accessPtrRegister));
+
     }
 
     /////////////////////Binary Expression/////////////////////
@@ -264,7 +286,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
                 appendWithIndent(formatter.formatMul( resultRegister, LLVMType.Int, register_e1, register_e2));
                 break;
             case "<":
-                appendWithIndent(formatter.formatCompare( resultRegister, ComparisonType.Less , LLVMType.Boolean, register_e1, register_e2));
+                appendWithIndent(formatter.formatCompare( resultRegister, ComparisonType.Less , LLVMType.Int, register_e1, register_e2));
                 break;
         }
     }
@@ -326,10 +348,25 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     /////////////////////Array & Method Expression/////////////////////
 
+    // call access_array, load from accessPtrRegister and set currentRegisterName
     @Override
     public void visit(ArrayAccessExpr e) {
+        // Load the address of the array
         e.arrayExpr().accept(this);
+        String addressArray = getField();
+
+        // get accessPtrRegister
         e.indexExpr().accept(this);
+        String index = getField();
+        String accessPtrRegister = access_array(index, addressArray);
+
+        // load
+        String resultRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatLoad(resultRegister, LLVMType.Int, accessPtrRegister));
+
+        // set currentRegisterName
+        currentRegisterName = resultRegister;
+
     }
 
     @Override
@@ -399,28 +436,15 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(ThisExpr e) {
     }
 
+    // new int[length]
     @Override
     public void visit(NewIntArrayExpr e) {
-        // Already allocate space on stack: VarDecl -> IntArrayAstType
+        // allocate space on stack in varDecl
 
         // Check that the size of the array is not negative
         e.lengthExpr().accept(this);
         String length = getField();
-        String condRegister = registerAllocator.allocateNewTempRegister();
-        appendWithIndent(formatter.formatCompare( condRegister, ComparisonType.Less , LLVMType.Boolean, length, "0"));
-
-        String arr_alloc0 = getNextLabel();
-        String arr_alloc1 = getNextLabel();
-
-        appendWithIndent(formatter.formatConditionalBreak(condRegister, arr_alloc0, arr_alloc1));
-
-        //  Size was negative, throw negative size exception
-        builder.append(formatter.formatLabelName(arr_alloc0));
-        appendWithIndent(formatter.formatCall("", LLVMType.Void, "throw_oob", null));
-        appendWithIndent(formatter.formatBreak(arr_alloc1));
-
-        // All ok, we can proceed with the allocation
-        builder.append(formatter.formatLabelName(arr_alloc1));
+        check_index(length, "0");
 
         // Calculate size bytes to be allocated for the array (new arr[sz] -> add i32 1, sz)
         // We need an additional int worth of space, to store the size of the array.
@@ -432,20 +456,21 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         List<LLVMMethodParam> params = Arrays.asList(
                 new LLVMMethodParam(LLVMType.Int,"4"),
                 new LLVMMethodParam(LLVMType.Int,sizeRegister));
-        //builder.append(formatter.formatCall(allocateRegister, "i8*", "calloc", params));
+        appendWithIndent(formatter.formatCall(allocateRegister, LLVMType.Address, "calloc", params));
 
         // Cast the returned pointer
         String castedRegister = registerAllocator.allocateNewTempRegister();
-        //builder.append(formatter.formatBitcast(castedRegister, "i8*", allocateRegister, "i32*"));
+        appendWithIndent(formatter.formatBitcast(castedRegister, LLVMType.Byte, allocateRegister, LLVMType.Int));
 
-        // Store the size of the array in the first position of the arra
+        // Store the size of the array in the first position of the arraY
         appendWithIndent(formatter.formatStore(LLVMType.Int, length, castedRegister));
 
         // This concludes the array allocation (new int[2])
-        // Assign the array pointer to x
-        // store i32* %_3, i32** %x
-        // TODO: WHERE?
+        // Assign the array pointer to it's register
+        // will happen in AssignStatement
+        currentRegisterName = castedRegister;
 
+        // appendWithIndent(formatter.formatStore(LLVMType.IntPointer, castedRegister, prevLrRegister));
     }
 
     @Override
@@ -502,6 +527,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //                store i8* %_0, i8** %b
         formatter.formatStore(LLVMType.Void, objectRegister, prevLrRegister);
     }
+
 
     // create boolean register with the negative value of e, set currentRegisterName.
     @Override
@@ -571,6 +597,59 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
                 "}\n"+
                 "\n";
         return helper;
+    }
+
+    /////////////////////Array Functions/////////////////////
+
+    // generate code for oob check:
+    // for access: length <= index
+    // for allocate: index < 0
+    private void check_index(String index, String length){
+        String condRegister = registerAllocator.allocateNewTempRegister();
+        if (length == "0")
+            appendWithIndent(formatter.formatCompare( condRegister, ComparisonType.Less , LLVMType.Int, index, "0"));
+        else
+            appendWithIndent(formatter.formatCompare( condRegister, ComparisonType.LessOrEquals , LLVMType.Int, length, index));
+
+        String labelNeg = getNextLabel();
+        String labelPos = getNextLabel();
+
+        appendWithIndent(formatter.formatConditionalBreak(condRegister, labelNeg, labelPos));
+
+        // Size/index was negative, throw negative size exception
+        builder.append(formatter.formatLabelName(labelNeg));
+        appendWithIndent(formatter.formatCall("", LLVMType.Void, "throw_oob", null));
+        appendWithIndent(formatter.formatBreak(labelPos));
+
+        // All ok, we can proceed with the allocation/access
+        builder.append(formatter.formatLabelName(labelPos));
+    }
+
+    private String access_array(String index, String addressArray){
+        // Load the address of the array - addressArray
+
+        // Check that the index is greater than zero
+        check_index(index, "0");
+
+        // Load the size of the array (first integer of the array)
+        String sizePtrRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatGetElementPtr(sizePtrRegister, LLVMType.Int, addressArray,"0", ""));
+        String sizeRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatLoad(sizeRegister, LLVMType.Int, sizePtrRegister));
+
+        // Check that the index is less than the size of the array
+        check_index(index, sizeRegister);
+
+        // All ok, we can safely index the array now
+        // We'll be accessing our array at index + 1, since the first element holds the size
+        String indexPlusOneRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatAdd(indexPlusOneRegister, LLVMType.Int, index, "1"));
+
+        // Get pointer to the i + 1 element of the array
+        String accessPtrRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatGetElementPtr(accessPtrRegister, LLVMType.Int, addressArray,indexPlusOneRegister, ""));
+
+        return accessPtrRegister;
     }
 
 }
