@@ -240,12 +240,15 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(AssignArrayStatement assignArrayStatement) {
 
+        // Load the address of the array
         String array = registerAllocator.allocateAddressRegister(assignArrayStatement.lv(), assignArrayStatement);
+        String addressArray = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatLoad(addressArray, LLVMType.IntPointer, array));
 
         // get accessPtrRegister
         assignArrayStatement.index().accept(this);
         String index = getField();
-        String accessPtrRegister = access_array(index, array);
+        String accessPtrRegister = access_array(index, addressArray);
 
         // get rv
         assignArrayStatement.rv().accept(this);
@@ -348,13 +351,14 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     // call access_array, load from accessPtrRegister and set currentRegisterName
     @Override
     public void visit(ArrayAccessExpr e) {
+        // Load the address of the array
         e.arrayExpr().accept(this);
-        String array = getField();
+        String addressArray = getField();
 
         // get accessPtrRegister
         e.indexExpr().accept(this);
         String index = getField();
-        String accessPtrRegister = access_array(index, array);
+        String accessPtrRegister = access_array(index, addressArray);
 
         // load
         String resultRegister = registerAllocator.allocateNewTempRegister();
@@ -617,10 +621,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append(formatter.formatLabelName(labelPos));
     }
 
-    private String access_array(String index, String array){
-        // Load the address of the array
-        String addressArray = registerAllocator.allocateNewTempRegister();
-        appendWithIndent(formatter.formatLoad(addressArray, LLVMType.IntPointer, array));
+    private String access_array(String index, String addressArray){
+        // Load the address of the array - addressArray
 
         // Check that the index is greater than zero
         check_index(index, "0");

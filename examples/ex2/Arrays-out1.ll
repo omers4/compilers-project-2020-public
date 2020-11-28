@@ -73,45 +73,43 @@ define i32 @Simple.bar(i8* %this)
 	%_20 = getelementptr i32, i32* %_14, i32 %_19
 	store i32 2, i32* %_20 
 	%_21 = load i32*, i32** %_x2 
-	%_22 = load i32*, i32** %_21 
-	%_23 = icmp slt i32 0, 0 
-	br i1 %_23, label 10, label 11 
+	%_22 = icmp slt i32 0, 0 
+	br i1 %_22, label 10, label 11 
 10: 
 	call void @throw_oob() 
 	br label %11 
 11: 
-	%_24 = getelementptr i32, i32* %_22, i32 0
-	%_25 = load i32, i32* %_24 
-	%_26 = icmp sle i32 %_25, 0 
-	br i1 %_26, label 12, label 13 
+	%_23 = getelementptr i32, i32* %_21, i32 0
+	%_24 = load i32, i32* %_23 
+	%_25 = icmp sle i32 %_24, 0 
+	br i1 %_25, label 12, label 13 
 12: 
 	call void @throw_oob() 
 	br label %13 
 13: 
-	%_27 = add i32 0, 1 
-	%_28 = getelementptr i32, i32* %_22, i32 %_27
-	%_29 = load i32, i32* %_28 
-	%_30 = load i32*, i32** %_x2 
-	%_31 = load i32*, i32** %_30 
-	%_32 = icmp slt i32 1, 0 
-	br i1 %_32, label 14, label 15 
+	%_26 = add i32 0, 1 
+	%_27 = getelementptr i32, i32* %_21, i32 %_26
+	%_28 = load i32, i32* %_27 
+	%_29 = load i32*, i32** %_x2 
+	%_30 = icmp slt i32 1, 0 
+	br i1 %_30, label 14, label 15 
 14: 
 	call void @throw_oob() 
 	br label %15 
 15: 
-	%_33 = getelementptr i32, i32* %_31, i32 0
-	%_34 = load i32, i32* %_33 
-	%_35 = icmp sle i32 %_34, 1 
-	br i1 %_35, label 16, label 17 
+	%_31 = getelementptr i32, i32* %_29, i32 0
+	%_32 = load i32, i32* %_31 
+	%_33 = icmp sle i32 %_32, 1 
+	br i1 %_33, label 16, label 17 
 16: 
 	call void @throw_oob() 
 	br label %17 
 17: 
-	%_36 = add i32 1, 1 
-	%_37 = getelementptr i32, i32* %_31, i32 %_36
-	%_38 = load i32, i32* %_37 
-	%_39 = add i32 %_29, %_38 
-	call void @print_int(i32 %_39) 
+	%_34 = add i32 1, 1 
+	%_35 = getelementptr i32, i32* %_29, i32 %_34
+	%_36 = load i32, i32* %_35 
+	%_37 = add i32 %_28, %_36 
+	call void @print_int(i32 %_37) 
 	ret i32 0 
 }
 
