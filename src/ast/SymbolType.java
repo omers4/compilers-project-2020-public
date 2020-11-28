@@ -4,5 +4,6 @@ public enum SymbolType {
     Field,
     Method,
     Decl,
-    Var
+    Var,
+    Class
 }

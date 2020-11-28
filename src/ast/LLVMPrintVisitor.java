@@ -464,7 +464,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         List<LLVMMethodParam> allocationParams = new ArrayList<>();
         allocationParams.add(new LLVMMethodParam(LLVMType.Int,"1"));
         allocationParams.add(new LLVMMethodParam(LLVMType.Int, Integer.toString(classSize)));
-        formatter.formatCall(objectRegister, LLVMType.Void, CALLOC, allocationParams);
+        formatter.formatCall(objectRegister, LLVMType.Address, CALLOC, allocationParams);
 
 //        ; Next we need to set the vtable pointer to point to the correct vtable (Base_vtable)
 //        ; First we bitcast the object pointer from i8* to i8***
@@ -477,7 +477,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ;		- it's a pointer to a location where we will be storing i8**.
         // %_1 = bitcast i8* %_0 to i8***
         String bitcastRegister = registerAllocator.allocateNewTempRegister();
-        formatter.formatBitcast(bitcastRegister, LLVMType.Void,objectRegister, LLVMType.Void); // TODO: Change when formattar enables
+        formatter.formatBitcast(bitcastRegister, LLVMType.Address,objectRegister, LLVMType.AddressPointerPointer);
 
 
 //        ; Get the address of the first element of the Base_vtable
@@ -488,15 +488,19 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ;; (alternative to getelementpr: %_2 = bitcast [2 x i8*]* @.Base_vtable to i8**)
         // %_2 = getelementptr [2 x i8*], [2 x i8*]* @.Base_vtable, i32 0, i32 0
         String elementPrtRegister = registerAllocator.allocateNewTempRegister();
-        formatter.formatGetElementPtr(elementPrtRegister, LLVMType.IntPointer, objectRegister, 0); // TODO: Change when formattar enables
+        LLVMType type = LLVMType.Address;
+
+        // TODO: What is the meaning of this 2?
+        type.setLength(2);
+        formatter.formatGetElementPtr(elementPrtRegister, type, objectRegister, 0, 0);
 
 //        ; Set the vtable to the correct address.
 //                store i8** %_2, i8*** %_1
-        formatter.formatStore(LLVMType.IntPointer, elementPrtRegister, bitcastRegister); // TODO: Change when formattar enables
+        formatter.formatStore(LLVMType.AddressPointer, elementPrtRegister, bitcastRegister);
 
 //        ; Store the address of the new object on the stack (var b), as a byte array (i8*).
 //                store i8* %_0, i8** %b
-        formatter.formatStore(LLVMType.Void, objectRegister, bitcastRegister);
+        formatter.formatStore(LLVMType.Void, objectRegister, prevLrRegister);
     }
 
     // create boolean register with the negative value of e, set currentRegisterName.

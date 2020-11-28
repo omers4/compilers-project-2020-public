@@ -11,6 +11,7 @@ public class VTableUtils {
             entry("void", 4)
     );
 
+    // Based only in the number of Fields
     public int getClassPhysicalSize(String classID){
         int size = 0;
         for (String fieldType : fields.keySet()) {

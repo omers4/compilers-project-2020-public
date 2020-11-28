@@ -16,10 +16,6 @@ public enum LLVMType {
         this.length = -1;
     }
 
-    LLVMType(int l) {
-        this.length = -1;
-    }
-
     public void setLength(int length) {
         this.length = length;
     }
