@@ -2,12 +2,15 @@ package ast;
 
 import LLVM.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class LLVMPrintVisitor implements IVisitorWithField<String> {
-    private StringBuilder builder = new StringBuilder();
+    private final String CALLOC = "calloc";
 
+
+    private StringBuilder builder = new StringBuilder();
     private int indent = 0;
     private int labelsCounter = 0;
     private String currentRegisterName;
@@ -382,7 +385,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         List<LLVMMethodParam> allocationParams = new ArrayList<>();
         allocationParams.add(new LLVMMethodParam(LLVMType.Int,"1"));
         allocationParams.add(new LLVMMethodParam(LLVMType.Int, Integer.toString(classSize)));
-        formatter.formatCall(objectRegister, LLVMType.IntPointer, allocationParams); // TODO: Change later to i8* and not i32*
+        formatter.formatCall(objectRegister, LLVMType.Void, CALLOC, allocationParams);
     }
 
     // create boolean register with the negative value of e, set currentRegisterName.
