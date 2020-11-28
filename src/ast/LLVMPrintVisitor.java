@@ -78,6 +78,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append(formatter.formatMethodDefinition(LLVMType.Int, "main", new ArrayList<>()));
         indent++;
         mainClass.mainStatement().accept(this);
+        appendWithIndent(formatter.formatReturn(LLVMType.Int, "0"));
         indent--;
         builder.append("}\n\n");
     }
@@ -107,6 +108,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
             stmt.accept(this);
         }
         methodDecl.ret().accept(this);
+        appendWithIndent(formatter.formatReturn(LLVMType.Int, currentRegisterName)); //TODO real type
 
         indent--;
         builder.append("}\n\n");
@@ -338,6 +340,11 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(IdentifierExpr e) {
+        String tempRegister = registerAllocator.allocateNewTempRegister();
+        String resultRegister = registerAllocator.allocateAddressRegister(e.id(), e);
+        currentRegisterName = tempRegister;
+        // TODO type
+        appendWithIndent(formatter.formatLoad(tempRegister, LLVMType.Int, resultRegister));
     }
 
     public void visit(ThisExpr e) {
