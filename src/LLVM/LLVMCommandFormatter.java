@@ -3,26 +3,6 @@ package LLVM;
 import java.util.List;
 
 public class LLVMCommandFormatter implements ILLVMCommandFormatter {
-    private String formatType(LLVMType type) {
-        switch (type) {
-            case Boolean:
-                return "i1";
-            case Byte:
-                return "i8";
-            case Address:
-                return "i8*";
-            case String:
-                break;
-            case Int: return "i32";
-            case IntPointer:
-                break;
-            case Void:
-                return "void";
-            default:
-                throw new IllegalStateException("Unexpected value: " + type);
-        }
-        return "";
-    }
 
     private String formatComparisonType(ComparisonType type) {
         switch (type) {
@@ -41,7 +21,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
     private String formatParams(List<LLVMMethodParam> params) {
         StringBuilder paramsString = new StringBuilder();
         for (var param : params) {
-            paramsString.append(String.format("%s %s, ", formatType(param.getType()), param.getName()));
+            paramsString.append(String.format("%s %s, ", param.getType().toString(), param.getName()));
         }
         if (!params.isEmpty()) {
             return paramsString.substring(0, paramsString.length()-2);
@@ -52,35 +32,35 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
 
     @Override
     public String formatExternalMethodDeclaration(LLVMType retType, String methodName, String params) {
-        return String.format("declare %s @%s(%s) \n", formatType(retType), methodName, params);
+        return String.format("declare %s @%s(%s) \n", retType.toString(), methodName, params);
     }
 
     @Override
     public String formatMethodDefinition(LLVMType retType, String name, List<LLVMMethodParam> params) {
-        return String.format("define %s @%s(%s) \n", formatType(retType), name, formatParams(params));
+        return String.format("define %s @%s(%s) \n", retType.toString(), name, formatParams(params));
     }
 
     @Override
     public String formatReturn(LLVMType retType, String register) {
-        return String.format("ret %s %s \n", formatType(retType), register);
+        return String.format("ret %s %s \n", retType.toString(), register);
     }
 
     @Override
     public String formatAlloca(String register, LLVMType type) {
-        return String.format("%s = alloca %s \n", register, formatType(type));
+        return String.format("%s = alloca %s \n", register, type.toString());
     }
 
     @Override
     public String formatStore(LLVMType sourceType, String sourceRegister, String destRegister) {
         return String.format("store %s %s, %s* %s \n",
-                formatType(sourceType), sourceRegister,
-                formatType(sourceType), destRegister);
+                sourceType.toString(), sourceRegister,
+                sourceType.toString(), destRegister);
     }
 
     @Override
     public String formatLoad(String register, LLVMType valueType, String sourcePointer) {
         return String.format("%s = load %s, %s* %s \n", register,
-                formatType(valueType), formatType(valueType), sourcePointer);
+                valueType.toString(), valueType.toString(), sourcePointer);
     }
 
     @Override
@@ -92,39 +72,39 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
             paramsString = "";
 
         if (retType == LLVMType.Void) {
-            return String.format("call %s @%s(%s) \n", formatType(retType), methodName, paramsString);
+            return String.format("call %s @%s(%s) \n", retType.toString(), methodName, paramsString);
         }
         return String.format("%s = call %s @%s(%s) \n", register,
-                formatType(retType), methodName, paramsString);
+                retType.toString(), methodName, paramsString);
     }
 
     @Override
     public String formatAdd(String register, LLVMType resultType, String first, String second) {
-        return String.format("%s = add %s %s, %s \n", register, formatType(resultType),
+        return String.format("%s = add %s %s, %s \n", register, resultType.toString(),
                 first, second);
     }
 
     @Override
     public String formatAnd(String register, LLVMType resultType, String first, String second) {
-        return String.format("%s = and %s %s, %s \n", register, formatType(resultType),
+        return String.format("%s = and %s %s, %s \n", register, resultType.toString(),
                 first, second);
     }
 
     @Override
     public String formatSub(String register, LLVMType resultType, String first, String second) {
-        return String.format("%s = sub %s %s, %s \n", register, formatType(resultType),
+        return String.format("%s = sub %s %s, %s \n", register, resultType.toString(),
                 first, second);
     }
 
     @Override
     public String formatMul(String register, LLVMType resultType, String first, String second) {
-        return String.format("%s = mul %s %s, %s \n", register, formatType(resultType),
+        return String.format("%s = mul %s %s, %s \n", register, resultType.toString(),
                 first, second);
     }
 
     @Override
     public String formatXOR(String register, LLVMType resultType, String first, String second) {
-        return String.format("%s = xor %s %s, %s \n", register, formatType(resultType),
+        return String.format("%s = xor %s %s, %s \n", register, resultType.toString(),
                 first, second);
     }
 
@@ -134,7 +114,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
         return String.format("%s = icmp %s %s %s, %s \n",
                 register,
                 formatComparisonType(compareType),
-                formatType(type),
+                type.toString(),
                 register1, register2);
     }
 
@@ -156,8 +136,8 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
     @Override
     public String formatBitcast(String register, LLVMType fromType, String fromRegister, LLVMType toType) {
         return String.format("%s = bitcast %s* %s to %s* \n",
-                register, formatType(fromType),
-                fromRegister, formatType(toType));
+                register, fromType.toString(),
+                fromRegister, toType.toString());
     }
 
     // TODO when we learn about arrays
@@ -168,7 +148,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
 
     @Override
     public String formatConstant(String register, int length, LLVMType type, String constantValue) {
-        return String.format("@%s = constant [%d x %s] c%s \n", register, length, formatType(type), constantValue);
+        return String.format("@%s = constant [%d x %s] c%s \n", register, length, type.toString(), constantValue);
     }
 
     // TODO when we learn about them

@@ -34,7 +34,11 @@ public class Main {
                     throw new UnsupportedOperationException("TODO - Ex. 3");
 
                 } else if (action.equals("compile")) {
-                    var llvmPrinter = new LLVMPrintVisitor();
+                    IVisitorWithField<IAstToSymbolTable> symbolTableVisitor = new SymbolTableVisitor<>();
+                    symbolTableVisitor.visit(prog);
+                    var astToSymbolTable = symbolTableVisitor.getField();
+                    var registerAllocator = new LLVMRegisterAllocator(astToSymbolTable);
+                    var llvmPrinter = new LLVMPrintVisitor(astToSymbolTable, registerAllocator);
                     llvmPrinter.visit(prog);
                     outFile.write(llvmPrinter.getString());
 

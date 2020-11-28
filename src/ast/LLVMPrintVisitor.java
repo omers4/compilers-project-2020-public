@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LLVMPrintVisitor implements IVisitorWithField<String> {
+    private final IAstToSymbolTable symbolTable;
     private StringBuilder builder = new StringBuilder();
 
     private int indent = 0;
@@ -23,6 +24,27 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     private void appendWithIndent(String str) {
         builder.append("\t".repeat(indent));
         builder.append(str);
+    }
+
+    private LLVMType ASTypeToLLVMType(AstType type) {
+        if (type instanceof IntAstType) {
+            return LLVMType.Int;
+        }
+
+        if (type instanceof BoolAstType) {
+            return LLVMType.Boolean;
+        }
+
+        if (type instanceof IntArrayAstType) {
+            var t = LLVMType.Int;
+            t.setLength(4); // TODO
+            return null;
+        }
+
+        if (type instanceof RefType) {
+            return LLVMType.Address;
+        }
+        return null;
     }
 
     //TODO: del examples
@@ -47,12 +69,15 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append("\n");
     }
 
+    public LLVMPrintVisitor(IAstToSymbolTable symbolTable, LLVMRegisterAllocator registerAllocator) {
+        this.symbolTable = symbolTable;
+        this.registerAllocator = registerAllocator;
+    }
+
 
     @Override
     public void visit(Program program) {
         builder.append(getHelperFunctions());
-
-        registerAllocator = new LLVMRegisterAllocator(program);
 
         program.mainClass().accept(this);
         for (ClassDecl classdecl : program.classDecls()) {
@@ -89,12 +114,10 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         var params = new ArrayList<LLVMMethodParam>();
         params.add(new LLVMMethodParam(LLVMType.Address, "this"));
         for (var formalArg: methodDecl.formals()) {
-            // TODO put correct type
-            params.add(new LLVMMethodParam(LLVMType.Int, formatter.formatFormalArgName(formalArg.name())));
+            params.add(new LLVMMethodParam(ASTypeToLLVMType(formalArg.type()), formatter.formatFormalArgName(formalArg.name())));
         }
 
-        // TODO put correct ret type
-        builder.append(formatter.formatMethodDefinition(LLVMType.Int, methodName, params));
+        builder.append(formatter.formatMethodDefinition(ASTypeToLLVMType(methodDecl.returnType()), methodName, params));
         indent++;
 
         methodDecl.returnType().accept(this);
@@ -108,7 +131,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
             stmt.accept(this);
         }
         methodDecl.ret().accept(this);
-        appendWithIndent(formatter.formatReturn(LLVMType.Int, currentRegisterName)); //TODO real type
+        appendWithIndent(formatter.formatReturn(ASTypeToLLVMType(methodDecl.returnType()), currentRegisterName));
 
         indent--;
         builder.append("}\n\n");
@@ -118,14 +141,14 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(FormalArg formalArg) {
         String reg_name = registerAllocator.allocateAddressRegister(formalArg.name(), formalArg);
         formalArg.type().accept(this);
-        appendWithIndent(formatter.formatAlloca(reg_name, LLVMType.Int)); //TODO real type
+        appendWithIndent(formatter.formatAlloca(reg_name, ASTypeToLLVMType(formalArg.type())));
         appendWithIndent(formatter.formatStore(LLVMType.Int, formatter.formatRegisterName(formatter.formatFormalArgName(formalArg.name())), reg_name));
     }
 
     @Override
     public void visit(VarDecl varDecl) {
-        // TODO type
-        appendWithIndent(formatter.formatAlloca(formatter.formatRegisterName(varDecl.name()), LLVMType.Int));
+        String reg_name = registerAllocator.allocateAddressRegister(varDecl.name(), varDecl);
+        appendWithIndent(formatter.formatAlloca(reg_name, ASTypeToLLVMType(varDecl.type())));
     }
 
     /////////////////////Statement/////////////////////
@@ -188,7 +211,10 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(AssignStatement assignStatement) {
+        String dest = registerAllocator.allocateAddressRegister(assignStatement.lv(), assignStatement);
         assignStatement.rv().accept(this);
+        // TODO
+        appendWithIndent(formatter.formatStore(LLVMType.Int, currentRegisterName, dest));
     }
 
     @Override
