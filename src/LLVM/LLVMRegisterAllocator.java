@@ -9,10 +9,8 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
     private IAstToSymbolTable _astToSymbolTable;
     private int _counter;
 
-    public LLVMRegisterAllocator(Program prog) {
-        IVisitorWithField<IAstToSymbolTable> symbolTableVisitor = new SymbolTableVisitor<>();
-        symbolTableVisitor.visit(prog);
-        _astToSymbolTable = symbolTableVisitor.getField();
+    public LLVMRegisterAllocator(IAstToSymbolTable symbolTable) {
+        _astToSymbolTable = symbolTable;
         _counter = 0;
     }
 
@@ -23,7 +21,7 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
             SymbolTableItem item = symbolTable.get(name);
             if (null == item.getRegisterId()) {
                 ++_counter;
-                item.setRegisterId(String.valueOf(_counter));
+                item.setRegisterId("%_" + name + String.valueOf(_counter));
             }
 
             return item.getRegisterId();

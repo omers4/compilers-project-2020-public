@@ -70,20 +70,22 @@ public interface ILLVMCommandFormatter {
 
     /* %ptr_idx = getelementptr i8, i8* %ptr, i32 %idx
      * -> formatGetElementPtr("%ptr_idx", LLVMType.Byte, "%idx") */
-    String formatGetElementPtr(String register, LLVMType type, String pointerRegister, int index);
+    String formatGetElementPtr(String register, LLVMType type, String pointerRegister, int rowIndex, int columnIndex);
 
     /* @.str = constant [12 x i8] c"Hello world\00"
     * -> formatConstant(".str", 12, LLVMType.Byte, "Hello world\00") */
     String formatConstant(String register, int length, LLVMType type, String constantValue);
 
-    /* TODO when we learn on vtables
-    @.vtable = global [2 x i8*] [i8* bitcast (i32 ()* @func1 to i8*), i8* bitcast (i8* (i32, i32*)* @func2 to i8*)]
-     * -> formatConstant("i8* bitcast (i32 ()* @func1 to i8*)", "i8* bitcast (i8* (i32, i32*)* @func2 to i8*)")*/
-    String formatGlobalVTable(List<String> table);
+    /* @.vtable = global [2 x i8*] [i8* bitcast (i32 ()* @func1 to i8*), i8* bitcast (i8* (i32, i32*)* @func2 to i8*)]
+     * -> formatConstant("@.vtable", {new LLVMMethodSignature("@A.foo", LLVMType.Int, null)})*/
+    String formatGlobalVTable(String globalVtableName, List<LLVMMethodSignature> signatures);
 
     /* %c = phi i32 [%a, %lb1], [%b, %lb2]
      * -> formatPhi("%c", "%a", "lb1", "%b", "lb2") */
     String formatPhi(String register,
                      String valueIfLabel1, String label1,
                      String valueIfLabel2, String label2);
+
+    String formatRegisterName(String register);
+    String formatFormalArgName(String formalArg);
 }
