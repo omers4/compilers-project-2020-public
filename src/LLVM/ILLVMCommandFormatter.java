@@ -69,7 +69,7 @@ public interface ILLVMCommandFormatter {
     String formatBitcast(String register, LLVMType fromType, String fromRegister, LLVMType toType);
 
     /* %ptr_idx = getelementptr i8, i8* %ptr, i32 %idx
-     * -> formatGetElementPtr("%ptr_idx", LLVMType.Byte, "%idx") */
+     * -> formatGetElementPtr("%ptr_idx", LLVMType.Byte, "%idx", 0, -1) */
     String formatGetElementPtr(String register, LLVMType type, String pointerRegister, int rowIndex, int columnIndex);
 
     /* @.str = constant [12 x i8] c"Hello world\00"
