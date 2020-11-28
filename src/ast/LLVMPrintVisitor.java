@@ -36,9 +36,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         }
 
         if (type instanceof IntArrayAstType) {
-            var t = LLVMType.Int;
-            t.setLength(4); // TODO
-            return null;
+            return LLVMType.IntPointer;
         }
 
         if (type instanceof RefType) {
