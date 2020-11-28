@@ -155,7 +155,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
         return String.format("@%s = constant [%d x %s] c%s \n", register, length, type.toString(), constantValue);
     }
 
-    // TODO when we learn about them
+    // TODO when vtables objects will be implemented
     @Override
     public String formatGlobalVTable(List<String> table) {
         return null;
