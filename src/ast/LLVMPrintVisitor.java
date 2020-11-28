@@ -19,7 +19,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     private LLVMRegisterAllocator registerAllocator;
     private VTableUtils vTable;
     private ClassDecl currentClass;
-    private ObjectsVTable vTable;
+    private String prevLrRegister;
 
     public String getString() {
         return builder.toString();
@@ -224,6 +224,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(AssignStatement assignStatement) {
         String dest = registerAllocator.allocateAddressRegister(assignStatement.lv(), assignStatement);
+        prevLrRegister = dest;
         assignStatement.rv().accept(this);
         var symbolTableOfStmt = symbolTable.getSymbolTable(assignStatement);
         var symbolTableEntry = symbolTableOfStmt.get(assignStatement.lv());
