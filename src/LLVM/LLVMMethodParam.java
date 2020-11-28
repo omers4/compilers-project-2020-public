@@ -4,7 +4,7 @@ public class LLVMMethodParam {
     private LLVMType type;
     private String name;
 
-    LLVMMethodParam(LLVMType paramType, String paramName) {
+    public LLVMMethodParam(LLVMType paramType, String paramName) {
         type=paramType;
         name=paramName;
     }

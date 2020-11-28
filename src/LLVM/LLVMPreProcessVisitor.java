@@ -2,57 +2,13 @@ package ast;
 
 import LLVM.*;
 
-import java.util.ArrayList;
-import java.util.List;
+public class LLVMPreProcessVisitor implements IVisitorWithField<String> {
 
-public class LLVMPrintVisitor implements IVisitorWithField<String> {
-    private StringBuilder builder = new StringBuilder();
-
-    private int indent = 0;
-    private int labelsCounter = 0;
     private String currentRegisterName;
     private LLVMCommandFormatter formatter = new LLVMCommandFormatter();
-    private LLVMRegisterAllocator registerAllocator;
-    private ObjectsVTable vTable;
-
-    public String getString() {
-        return builder.toString();
-    }
-
-    private void appendWithIndent(String str) {
-        builder.append("\t".repeat(indent));
-        builder.append(str);
-    }
-
-    //TODO: del examples
-    public void examples(){
-        // Examples of usage:
-        builder.append(formatter.formatAlloca("%3", LLVMType.Boolean));
-        builder.append("\n");
-        builder.append(formatter.formatLoad("%3", LLVMType.Int,"%4"));
-        builder.append("\n");
-        builder.append(formatter.formatStore(LLVMType.Int, "%3","%4"));
-        builder.append("\n");
-
-        builder.append(formatter.formatAdd("%3", LLVMType.Int,"%4", "%5"));
-        builder.append("\n");
-        builder.append(formatter.formatAnd("%3", LLVMType.Int,"%4", "%5"));
-        builder.append("\n");
-        builder.append(formatter.formatSub("%3", LLVMType.Int,"%4", "%5"));
-        builder.append("\n");
-        builder.append(formatter.formatXOR("%3", LLVMType.Int,"%4", "%5"));
-        builder.append("\n");
-        builder.append(formatter.formatMul("%3", LLVMType.Int,"%4", "%5"));
-        builder.append("\n");
-    }
-
 
     @Override
     public void visit(Program program) {
-        builder.append(getHelperFunctions());
-
-        registerAllocator = new LLVMRegisterAllocator(program);
-
         program.mainClass().accept(this);
         for (ClassDecl classdecl : program.classDecls()) {
             classdecl.accept(this);
@@ -325,21 +281,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(NewObjectExpr e) {
-//        ; First, we allocate the required memory on heap for our object.
-//        ; We call calloc to achieve this:
-//        ;   * The first argument is the amount of objects we want to allocate
-//                ;     (always 1 for object allocation, but handy in arrays)
-//        ;   * The second argument is the size of the object. This is calculated as the sum of the
-//                ;     size of the fields of the class and all the super classes PLUS 8 bytes, to account for
-//        ;     the vtable pointer.
-//        ; In our case, we have a single int field so it's 4 + 8 = 12 bytes
-//                %_0 = call i8* @calloc(i32 1, i32 12)
-        String objectRegister = registerAllocator.allocateNewTempRegister();
-        int classSize = vTable.getClassPhysicalSize(e.classId());
-        List<LLVMMethodParam> allocationParams = new ArrayList<>();
-        allocationParams.add(new LLVMMethodParam(LLVMType.Int,"1"));
-        allocationParams.add(new LLVMMethodParam(LLVMType.Int, Integer.toString(classSize)));
-        formatter.formatCall(objectRegister, LLVMType.IntPointer, allocationParams); // TODO: Change later to i8* and not i32*
     }
 
     // create boolean register with the negative value of e, set currentRegisterName.
