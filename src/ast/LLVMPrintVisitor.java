@@ -149,15 +149,15 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String condRegister = this.getField();
         appendWithIndent(formatter.formatConditionalBreak(condRegister, if0, if1));
 
-        appendWithIndent(formatter.formatLabelName(if0));
+        builder.append(formatter.formatLabelName(if0));
         ifStatement.thencase().accept(this);
         appendWithIndent(formatter.formatBreak(if2));
 
-        appendWithIndent(formatter.formatLabelName(if1));
+        builder.append(formatter.formatLabelName(if1));
         ifStatement.elsecase().accept(this);
         appendWithIndent(formatter.formatBreak(if2));
 
-        appendWithIndent(formatter.formatLabelName(if2));
+        builder.append(formatter.formatLabelName(if2));
 
     }
 
@@ -169,16 +169,16 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String while1 = getNextLabel(); // while body
         String while2 = getNextLabel(); // after body block
 
-        appendWithIndent(formatter.formatLabelName(while0));
+        builder.append(formatter.formatLabelName(while0));
         whileStatement.cond().accept(this);
         String condRegister = this.getField();
         appendWithIndent(formatter.formatConditionalBreak(condRegister, while1, while2));
 
-        appendWithIndent(formatter.formatLabelName(while1));
+        builder.append(formatter.formatLabelName(while1));
         whileStatement.body().accept(this);
         appendWithIndent(formatter.formatBreak(while0));
 
-        appendWithIndent(formatter.formatLabelName(while2));
+        builder.append(formatter.formatLabelName(while2));
     }
 
     @Override
@@ -241,18 +241,18 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String andcond2 = getNextLabel(); // this label seems redundant, but this becomes useful when compiling expressions a && b && c
         String andcond3 = getNextLabel(); // get appropriate value, depending on the predecessor block
 
-        appendWithIndent(formatter.formatLabelName(andcond0));
+        builder.append(formatter.formatLabelName(andcond0));
         appendWithIndent(formatter.formatConditionalBreak(register_e1, andcond1, andcond3));
 
-        appendWithIndent(formatter.formatLabelName(andcond1));
+        builder.append(formatter.formatLabelName(andcond1));
         e.e2().accept(this);
         String register_e2 = this.getField();
         appendWithIndent(formatter.formatBreak(andcond2));
 
-        appendWithIndent(formatter.formatLabelName(andcond2));
+        builder.append(formatter.formatLabelName(andcond2));
         appendWithIndent(formatter.formatBreak(andcond3));
 
-        appendWithIndent(formatter.formatLabelName(andcond3));
+        builder.append(formatter.formatLabelName(andcond3));
         String resultRegister = registerAllocator.allocateNewTempRegister();
         appendWithIndent(formatter.formatPhi(resultRegister, "0", andcond0, register_e2, andcond2));
 
@@ -359,12 +359,12 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         appendWithIndent(formatter.formatConditionalBreak(condRegister, arr_alloc0, arr_alloc1));
 
         //  Size was negative, throw negative size exception
-        appendWithIndent(formatter.formatLabelName(arr_alloc0));
+        builder.append(formatter.formatLabelName(arr_alloc0));
         appendWithIndent(formatter.formatCall("", LLVMType.Void, "throw_oob", null));
         appendWithIndent(formatter.formatBreak(arr_alloc1));
 
         // All ok, we can proceed with the allocation
-        appendWithIndent(formatter.formatLabelName(arr_alloc1));
+        builder.append(formatter.formatLabelName(arr_alloc1));
 
         // Calculate size bytes to be allocated for the array (new arr[sz] -> add i32 1, sz)
         // We need an additional int worth of space, to store the size of the array.
