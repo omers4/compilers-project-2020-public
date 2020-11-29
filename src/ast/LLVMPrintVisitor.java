@@ -513,12 +513,13 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ;   * The third and fourth arguments are indexes
 //        ;; (alternative to getelementpr: %_2 = bitcast [2 x i8*]* @.Base_vtable to i8**)
         // %_2 = getelementptr [2 x i8*], [2 x i8*]* @.Base_vtable, i32 0, i32 0
+        String vTableRegister = registerAllocator.allocateAddressRegister(e.classId(), e);
         String elementPrtRegister = registerAllocator.allocateNewTempRegister();
         LLVMType type = LLVMType.Address;
 
         // TODO: What is the meaning of this 2?
         type.setLength(2);
-        formatter.formatGetElementPtr(elementPrtRegister, type, objectRegister, "0", "0");
+        formatter.formatGetElementPtr(elementPrtRegister, type, vTableRegister, "0", "0");
 
 //        ; Set the vtable to the correct address.
 //                store i8** %_2, i8*** %_1
