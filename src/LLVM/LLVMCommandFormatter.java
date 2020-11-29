@@ -33,7 +33,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
 
     @Override
     public String formatExternalMethodDeclaration(LLVMType retType, String methodName, String params) {
-        return String.format("declare %s @%s(%s) \n", retType.toString(), methodName, params);
+        return String.format("declare %s @%s(%s) {\n", retType.toString(), methodName, params);
     }
 
     @Override
