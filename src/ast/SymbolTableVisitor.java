@@ -89,6 +89,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
             methodDecl.accept(this);
         }
 
+        _classesSymbolTable.put(classDecl.name(), _symbolTableHierarchy.peek());
         _symbolTableHierarchy.pop();
     }
 

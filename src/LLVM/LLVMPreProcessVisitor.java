@@ -6,13 +6,11 @@ import java.util.stream.Collectors;
 
 public class LLVMPreProcessVisitor implements Visitor {
 
-    private AstToLLVMUtils vTable;
     private IAstToSymbolTable astToSymbolTable;
     private ILLVMCommandFormatter formatter;
     private ILLVMRegisterAllocator registerAllocator;
 
     public LLVMPreProcessVisitor(IAstToSymbolTable astToSymbolTable, ILLVMCommandFormatter formatter, ILLVMRegisterAllocator registerAllocator) {
-        vTable = new AstToLLVMUtils();
         this.astToSymbolTable = astToSymbolTable;
         this.formatter = formatter;
         this.registerAllocator = registerAllocator;
