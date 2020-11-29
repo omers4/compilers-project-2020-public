@@ -6,7 +6,7 @@ import LLVM.LLVMType;
 
 import java.util.List;
 
-public class MethodSignature {
+public class MethodSignature  {
     private String name;
     private AstType ret;
     private List<FormalArg> params;
@@ -17,7 +17,14 @@ public class MethodSignature {
         this.params=params;
     }
 
+    public String getName() { return this.name; }
+    public AstType getRet() { return this.ret; }
+    public List<FormalArg> getFormals() { return this.params; }
+
+
     public LLVMMethodSignature toLLVMSignature() {
+
         return null;
+        //return new LLVMMethodSignature(name, LLVMType.)
     }
 }

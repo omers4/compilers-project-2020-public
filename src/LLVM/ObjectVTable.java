@@ -2,6 +2,7 @@ package LLVM;
 
 import ast.*;
 
+import java.sql.Ref;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -10,22 +11,26 @@ import static java.util.Map.entry;
 public class ObjectVTable {
 
     private String Id;
-    private List<String> fields;
-
-    // TODO: Better to make it more abstract and not connect it directly to LLVM
+    private LinkedHashMap<String, AstType> fields;
     private LinkedHashMap<String, MethodSignature> methods;
+    Map<Class, Integer> astTypeToSize = Map.ofEntries(
+            entry(BoolAstType.class, 4),
+            entry(IntArrayAstType.class, 4),
+            entry(IntAstType.class, 8),
+            entry(RefType.class, 4)
+    );
 
     public ObjectVTable(String id) {
 
         this.Id = id;
 
         // Order is important to know later where each field resides in memory;
-        fields = new ArrayList<>();
+        fields = new LinkedHashMap<>();
         methods = new LinkedHashMap<>();
     }
 
-    public void addField(String id) {
-        fields.add(id);
+    public void addField(String id, AstType type) {
+        fields.put(id,type);
     }
 
     public void addOrUpdateMethod(String id, String className, MethodDecl methodDecl) {
@@ -36,11 +41,26 @@ public class ObjectVTable {
         this.methods.put(id,methodSignature);
     }
 
+    public void addOrUpdateMethod(MethodSignature methodSignature) {
+
+        // TODO: Check when overiding that order preserves
+        this.methods.put(methodSignature.getName(),methodSignature);
+    }
+
     public List<MethodSignature> getMethods() {
         return new ArrayList<>(this.methods.values());
     }
 
-    public List<String> getFields() {
+    public LinkedHashMap<String, AstType> getFields() {
         return this.fields;
+    }
+
+    public int getClassPhysicalSize() {
+        int size = 0;
+        for (var fieldType : this.fields.values()) {
+            size += astTypeToSize.get(fieldType.getClass());
+        }
+
+        return size;
     }
 }

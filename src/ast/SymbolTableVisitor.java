@@ -22,16 +22,21 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         ObjectVTable vTable = new ObjectVTable(classDecl.name());
 
         // If parent exists we want it's fields reside first in VTable
+        // Order is important! We first want to add the parent fields
         if (classDecl.superName() != null) {
             SymbolTable parentSymbolTable = _classesSymbolTable.get(classDecl.superName());
             SymbolTableItem parentClassItem = parentSymbolTable.get(classDecl.superName());
-            for (var name : parentClassItem.getVTable().getFields()) {
-                vTable.addField(name);
+            for (var entry : parentClassItem.getVTable().getFields().entrySet()) {
+                vTable.addField(entry.getKey(),entry.getValue());
+            }
+
+            for (MethodSignature methodSignature : parentClassItem.getVTable().getMethods()) {
+                vTable.addOrUpdateMethod(methodSignature);
             }
         }
 
         for (var fieldDecl : classDecl.fields()) {
-            vTable.addField(fieldDecl.name());
+            vTable.addField(fieldDecl.name(), fieldDecl.type());
         }
         for (var methodDecl : classDecl.methoddecls()) {
             vTable.addOrUpdateMethod(methodDecl.name(), classDecl.name(), methodDecl);

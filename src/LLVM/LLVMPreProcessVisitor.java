@@ -2,20 +2,17 @@ package ast;
 
 import LLVM.*;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class LLVMPreProcessVisitor implements Visitor {
 
-    private VTableUtils vTable;
+    private AstToLLVMUtils vTable;
     private IAstToSymbolTable astToSymbolTable;
     private ILLVMCommandFormatter formatter;
     private ILLVMRegisterAllocator registerAllocator;
 
     public LLVMPreProcessVisitor(IAstToSymbolTable astToSymbolTable, ILLVMCommandFormatter formatter, ILLVMRegisterAllocator registerAllocator) {
-        vTable = new VTableUtils();
+        vTable = new AstToLLVMUtils();
         this.astToSymbolTable = astToSymbolTable;
         this.formatter = formatter;
         this.registerAllocator = registerAllocator;
