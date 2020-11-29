@@ -10,7 +10,7 @@ public class SymbolTableItem {
     private String _registerAddr;
     private AstType _type;
     private ObjectVTable _vTable;
-    private LLVMMethodSignature _methodSignature;
+    private MethodSignature _methodSignature;
 
     public SymbolTableItem(String id, SymbolType kind, AstType type) {
         this._id = id;
@@ -19,19 +19,17 @@ public class SymbolTableItem {
         _type = type;
     }
 
-    public SymbolTableItem(String id, SymbolType kind, AstType type, ObjectVTable vTable) {
+    public SymbolTableItem(String id, SymbolType kind,  ObjectVTable vTable) {
         this._id = id;
         this._kind = kind;
         _registerAddr = null;
-        _type = type;
         _vTable = vTable;
     }
 
-    public SymbolTableItem(String id, SymbolType kind, AstType type, LLVMMethodSignature methodSignature) {
+    public SymbolTableItem(String id, SymbolType kind,  MethodSignature methodSignature) {
         this._id = id;
         this._kind = kind;
         _registerAddr = null;
-        _type = type;
         _methodSignature = methodSignature;
     }
 
@@ -43,9 +41,14 @@ public class SymbolTableItem {
         return _type;
     }
 
+    public String getId() { return _id;}
+
     public void setRegisterId(String id) {
         _registerAddr = id;
     }
 
+    public ObjectVTable getVTable() {return _vTable; }
+
+    public MethodSignature getMethodSignature() {return _methodSignature; }
 
 }

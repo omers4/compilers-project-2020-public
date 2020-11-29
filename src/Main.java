@@ -1,5 +1,8 @@
+import LLVM.ILLVMCommandFormatter;
+import LLVM.LLVMCommandFormatter;
 import LLVM.LLVMRegisterAllocator;
 import ast.*;
+import ast.LLVMPreProcessVisitor;
 
 import java.io.*;
 
@@ -38,7 +41,11 @@ public class Main {
                     symbolTableVisitor.visit(prog);
                     var astToSymbolTable = symbolTableVisitor.getField();
                     var registerAllocator = new LLVMRegisterAllocator(astToSymbolTable);
-                    var llvmPrinter = new LLVMPrintVisitor(astToSymbolTable, registerAllocator);
+
+
+                    ILLVMCommandFormatter commandFormatter = new LLVMCommandFormatter();
+                    Visitor preProcessVisitor = new LLVMPreProcessVisitor(astToSymbolTable, commandFormatter, registerAllocator);
+                    var llvmPrinter = new LLVMPrintVisitor(astToSymbolTable, registerAllocator, commandFormatter);
                     llvmPrinter.visit(prog);
                     outFile.write(llvmPrinter.getString());
 

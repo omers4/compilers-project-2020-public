@@ -15,7 +15,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     private int indent = 0;
     private int labelsCounter = 0;
     private String currentRegisterName;
-    private LLVMCommandFormatter formatter = new LLVMCommandFormatter();
+    private ILLVMCommandFormatter formatter;
     private LLVMRegisterAllocator registerAllocator;
     private VTableUtils vTable;
     private ClassDecl currentClass;
@@ -81,9 +81,10 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append("\n");
     }
 
-    public LLVMPrintVisitor(IAstToSymbolTable symbolTable, LLVMRegisterAllocator registerAllocator) {
+    public LLVMPrintVisitor(IAstToSymbolTable symbolTable, LLVMRegisterAllocator registerAllocator, ILLVMCommandFormatter formatter) {
         this.symbolTable = symbolTable;
         this.registerAllocator = registerAllocator;
+        this.formatter = formatter;
     }
 
 
@@ -517,7 +518,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
         // TODO: What is the meaning of this 2?
         type.setLength(2);
-        formatter.formatGetElementPtr(elementPrtRegister, type, objectRegister, 0, 0);
+        formatter.formatGetElementPtr(elementPrtRegister, type, objectRegister, "0", "0");
 
 //        ; Set the vtable to the correct address.
 //                store i8** %_2, i8*** %_1
