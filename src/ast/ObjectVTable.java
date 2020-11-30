@@ -49,4 +49,8 @@ public class ObjectVTable {
         return this.fields;
     }
 
+    public int getClassPhysicalSize() {
+        return 2;
+    }
+
 }
