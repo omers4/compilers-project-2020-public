@@ -11,10 +11,12 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
 
     private final IAstToSymbolTable symbolTable;
+    private final ClassHierarchyForest classHierarchy;
     private StringBuilder builder = new StringBuilder();
     private int indent = 0;
     private int labelsCounter = 0;
     private String currentRegisterName;
+    private AstType currentRegisterType;
     private ILLVMCommandFormatter formatter;
     private LLVMRegisterAllocator registerAllocator;
     private ClassDecl currentClass;
@@ -80,10 +82,11 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         builder.append("\n");
     }
 
-    public LLVMPrintVisitor(IAstToSymbolTable symbolTable, LLVMRegisterAllocator registerAllocator, ILLVMCommandFormatter formatter) {
+    public LLVMPrintVisitor(IAstToSymbolTable symbolTable, LLVMRegisterAllocator registerAllocator, ILLVMCommandFormatter formatter, ClassHierarchyForest classHierarchy) {
         this.symbolTable = symbolTable;
         this.registerAllocator = registerAllocator;
         this.formatter = formatter;
+        this.classHierarchy = classHierarchy;
     }
 
 
@@ -274,6 +277,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
         String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
+        currentRegisterType = new IntAstType();
 
         // TODO: LLVMType according to register_e1,e2 types
 
@@ -322,6 +326,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
         // set currentRegisterName
         currentRegisterName = resultRegister;
+        currentRegisterType = new BoolAstType();
     }
 
     // call to visitBinaryExpr
@@ -368,6 +373,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
         // set currentRegisterName
         currentRegisterName = resultRegister;
+        currentRegisterType = new IntAstType();
 
     }
 
@@ -379,21 +385,24 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(MethodCallExpr e) {
         ArrayList<LLVMMethodParam> actuals = new ArrayList<>();
-        var dynamicMethodItem = this.symbolTable.getSymbolTable(e).get(e.methodId());
-        var signature = dynamicMethodItem.getMethodSignature();
         int i = 0;
 
         e.ownerExpr().accept(this);  // can be this.foo() (new A()).foo x.foo
+        // TODO get class from currentRegisterType
+        RefType ref = (RefType) currentRegisterType;
+        var classDecl = classHierarchy.getClassDeclByName(ref.id());
+        var method = null;
+
         String methodLocation = currentRegisterName;
         for (Expr arg : e.actuals()) {
             arg.accept(this);
-            var astFormalType = signature.getFormals().get(i).type();
-            actuals.add(new LLVMMethodParam(ASTypeToLLVMType(astFormalType), currentRegisterName));
+            var astFormalType = currentRegisterType;
+            actuals.add(new LLVMMethodParam(ASTypeToLLVMType(currentRegisterType), currentRegisterName));
             i++;
         }
         String callResult = registerAllocator.allocateNewTempRegister();
         currentRegisterName = callResult;
-        appendWithIndent(formatter.formatCall(callResult, ASTypeToLLVMType(signature.getRet()), methodLocation, actuals));
+        appendWithIndent(formatter.formatCall(callResult, ASTypeToLLVMType(currentRegisterType), methodLocation, actuals));
     }
 
     /////////////////////Expression/////////////////////
@@ -402,7 +411,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(IntegerLiteralExpr e) {
         currentRegisterName = Integer.toString(e.num());
-
+        currentRegisterType = new IntAstType();
         /* TODO: del?
         // create int register with the value of the integer literal, set currentRegisterName.
         int value = e.num();
@@ -416,6 +425,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(TrueExpr e) {
         String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
+        currentRegisterType = new BoolAstType();
         appendWithIndent(formatter.formatAnd(resultRegister, LLVMType.Boolean,"1", "1"));
     }
 
@@ -424,6 +434,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(FalseExpr e) {
         String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
+        currentRegisterType = new BoolAstType();
         appendWithIndent(formatter.formatAnd(resultRegister, LLVMType.Boolean,"0", "0"));
     }
 
@@ -434,6 +445,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         currentRegisterName = tempRegister;
         var symbolTableOfStmt = symbolTable.getSymbolTable(e);
         var symbolTableEntry = symbolTableOfStmt.get(e.id());
+        currentRegisterType = symbolTableEntry.getType();
         appendWithIndent(formatter.formatLoad(tempRegister, ASTypeToLLVMType(symbolTableEntry.getType()), resultRegister));
     }
 
@@ -474,6 +486,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         // will happen in AssignStatement
         currentRegisterName = castedRegister;
 
+        currentRegisterType = new IntArrayAstType();
+
         // appendWithIndent(formatter.formatStore(LLVMType.IntPointer, castedRegister, prevLrRegister));
     }
 
@@ -489,8 +503,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ; In our case, we have a single int field so it's 4 + 8 = 12 bytes
 //                %_0 = call i8* @calloc(i32 1, i32 12)
         String objectRegister = registerAllocator.allocateNewTempRegister();
-        var dynamicClassItem = this.symbolTable.getSymbolTable(e).get(e.classId());
-        int classSize =dynamicClassItem.getVTable().getClassPhysicalSize();
+//        var dynamicClassItem = this.symbolTable.getSymbolTable(e).get(e.classId());
+        int classSize = 8;
         List<LLVMMethodParam> allocationParams = new ArrayList<>();
         allocationParams.add(new LLVMMethodParam(LLVMType.Int,"1"));
         allocationParams.add(new LLVMMethodParam(LLVMType.Int, Integer.toString(classSize)));
@@ -532,6 +546,13 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ; Store the address of the new object on the stack (var b), as a byte array (i8*).
 //                store i8* %_0, i8** %b
         formatter.formatStore(LLVMType.Void, objectRegister, prevLrRegister);
+
+
+        var refType = new RefType();
+        refType.setId(e.classId());
+
+        currentRegisterName = objectRegister;
+        currentRegisterType = refType;
     }
 
 
@@ -544,6 +565,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
         String resultRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = resultRegister;
+
+        currentRegisterType = new BoolAstType();
         appendWithIndent(formatter.formatSub(resultRegister, LLVMType.Boolean,"1", exprRegister));
     }
 

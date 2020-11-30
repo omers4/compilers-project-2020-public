@@ -31,6 +31,10 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
         return methodOwnerClassTree;
     }
 
+    public ClassDecl getClassDeclByName(String name) {
+        return this.getClassTreeByNameFromForest(this.trees, name).getClassDecl();
+    }
+
     /*
      * The target of this method is to initialize the forest by going over all
      * classes and link them according to the inheritance.
