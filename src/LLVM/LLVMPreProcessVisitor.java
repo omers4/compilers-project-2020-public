@@ -4,11 +4,12 @@ import LLVM.*;
 
 import java.util.stream.Collectors;
 
-public class LLVMPreProcessVisitor implements Visitor {
+public class LLVMPreProcessVisitor implements IVisitorWithField<ClassInfo> {
 
     private IAstToSymbolTable astToSymbolTable;
     private ILLVMCommandFormatter formatter;
     private ILLVMRegisterAllocator registerAllocator;
+    private ClassInfo classesInfo;
 
     public LLVMPreProcessVisitor(IAstToSymbolTable astToSymbolTable, ILLVMCommandFormatter formatter, ILLVMRegisterAllocator registerAllocator) {
         this.astToSymbolTable = astToSymbolTable;
@@ -206,5 +207,10 @@ public class LLVMPreProcessVisitor implements Visitor {
     @Override
     public void visit(RefType t) {
 
+    }
+
+    @Override
+    public ClassInfo getField() {
+        return classesInfo;
     }
 }

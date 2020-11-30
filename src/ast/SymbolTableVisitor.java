@@ -1,8 +1,5 @@
 package ast;
 
-import LLVM.LLVMMethodSignature;
-import LLVM.ObjectVTable;
-
 import java.util.*;
 
 public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<IAstToSymbolTable> {
@@ -95,6 +92,11 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
     @Override
     public void visit(MainClass mainClass) {
+
+        // Order matters. We first connect the Ast to a new SymbolTable and then we add it to the mapping using peek
+        _symbolTableHierarchy.push((new SymbolTable(null)));
+        _astToSymbolTable.addMapping(mainClass, _symbolTableHierarchy.peek());
+
         mainClass.mainStatement().accept(this);
     }
 
@@ -270,6 +272,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
     @Override
     public void visit(NewObjectExpr e) {
+
         _astToSymbolTable.addMapping(e, _symbolTableHierarchy.peek());
     }
 

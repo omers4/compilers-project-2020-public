@@ -1,8 +1,5 @@
 package ast;
 
-import LLVM.LLVMMethodSignature;
-import LLVM.ObjectVTable;
-
 public class SymbolTableItem {
 
     private String _id;

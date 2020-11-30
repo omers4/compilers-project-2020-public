@@ -1,4 +1,4 @@
-package LLVM;
+package ast;
 
 import ast.*;
 
@@ -13,12 +13,6 @@ public class ObjectVTable {
     private String Id;
     private LinkedHashMap<String, AstType> fields;
     private LinkedHashMap<String, MethodSignature> methods;
-    Map<Class, Integer> astTypeToSize = Map.ofEntries(
-            entry(BoolAstType.class, 4),
-            entry(IntArrayAstType.class, 4),
-            entry(IntAstType.class, 8),
-            entry(RefType.class, 4)
-    );
 
     public ObjectVTable(String id) {
 
@@ -55,12 +49,4 @@ public class ObjectVTable {
         return this.fields;
     }
 
-    public int getClassPhysicalSize() {
-        int size = 0;
-        for (var fieldType : this.fields.values()) {
-            size += astTypeToSize.get(fieldType.getClass());
-        }
-
-        return size;
-    }
 }
