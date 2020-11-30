@@ -15,6 +15,38 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         _symbolTableHierarchy.push(null);
     }
 
+    private ObjectVTable createVTable(ClassDecl classDecl) {
+        ObjectVTable vTable = new ObjectVTable(classDecl.name());
+
+        // If parent exists we want it's fields reside first in VTable
+        // Order is important! We first want to add the parent fields
+        if (classDecl.superName() != null) {
+            SymbolTable parentSymbolTable = _classesSymbolTable.get(classDecl.superName());
+            SymbolTableItem parentClassItem = parentSymbolTable.get(classDecl.superName());
+            for (var entry : parentClassItem.getVTable().getFields().entrySet()) {
+                vTable.addField(entry.getKey(),entry.getValue());
+            }
+
+            for (MethodSignature methodSignature : parentClassItem.getVTable().getMethods()) {
+                vTable.addOrUpdateMethod(methodSignature);
+            }
+        }
+
+        for (var fieldDecl : classDecl.fields()) {
+            vTable.addField(fieldDecl.name(), fieldDecl.type());
+        }
+        for (var methodDecl : classDecl.methoddecls()) {
+            vTable.addOrUpdateMethod(methodDecl.name(), classDecl.name(), methodDecl);
+        }
+
+        return vTable;
+    }
+
+    private MethodSignature createMethodSignature(MethodDecl methodDecl) {
+
+        return new MethodSignature(methodDecl.name(), methodDecl.returnType(), methodDecl.formals());
+    }
+
     private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
         _astToSymbolTable.addMapping(e, _symbolTableHierarchy.peek());
         e.e1().accept(this);
@@ -43,6 +75,10 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         _symbolTableHierarchy.push((new SymbolTable(parentSymbolTable)));
         _astToSymbolTable.addMapping(classDecl, _symbolTableHierarchy.peek());
 
+        ObjectVTable vTable = createVTable(classDecl);
+        SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
+        curContextSymbolTable.addSymbol(classDecl.name(), new SymbolTableItem(classDecl.name(), SymbolType.Class, vTable));
+
         for (var fieldDecl : classDecl.fields()) {
             fieldDecl.accept(this);
         }
@@ -50,11 +86,17 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
             methodDecl.accept(this);
         }
 
+        _classesSymbolTable.put(classDecl.name(), _symbolTableHierarchy.peek());
         _symbolTableHierarchy.pop();
     }
 
     @Override
     public void visit(MainClass mainClass) {
+
+        // Order matters. We first connect the Ast to a new SymbolTable and then we add it to the mapping using peek
+        _symbolTableHierarchy.push((new SymbolTable(null)));
+        _astToSymbolTable.addMapping(mainClass, _symbolTableHierarchy.peek());
+
         mainClass.mainStatement().accept(this);
     }
 
@@ -62,6 +104,10 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
     public void visit(MethodDecl methodDecl) {
         _symbolTableHierarchy.push(new SymbolTable(_symbolTableHierarchy.peek()));
         _astToSymbolTable.addMapping(methodDecl, _symbolTableHierarchy.peek());
+
+        MethodSignature methodSignature = createMethodSignature(methodDecl);
+        SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
+        curContextSymbolTable.addSymbol(methodDecl.name(), new SymbolTableItem(methodDecl.name(), SymbolType.Method, methodSignature));
 
         methodDecl.returnType().accept(this);
 
@@ -226,6 +272,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
     @Override
     public void visit(NewObjectExpr e) {
+
         _astToSymbolTable.addMapping(e, _symbolTableHierarchy.peek());
     }
 

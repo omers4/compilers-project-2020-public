@@ -2,17 +2,25 @@ package ast;
 
 import LLVM.*;
 
-public class LLVMPreProcessVisitor implements IVisitorWithField<VTableUtils> {
+import java.util.stream.Collectors;
 
-    private VTableUtils vTable;
+public class LLVMPreProcessVisitor implements IVisitorWithField<ClassInfo> {
 
-    public LLVMPreProcessVisitor() {
-        vTable = new VTableUtils();
+    private IAstToSymbolTable astToSymbolTable;
+    private ILLVMCommandFormatter formatter;
+    private ILLVMRegisterAllocator registerAllocator;
+    private ClassInfo classesInfo;
+
+    public LLVMPreProcessVisitor(IAstToSymbolTable astToSymbolTable, ILLVMCommandFormatter formatter, ILLVMRegisterAllocator registerAllocator) {
+        this.astToSymbolTable = astToSymbolTable;
+        this.formatter = formatter;
+        this.registerAllocator = registerAllocator;
     }
 
-    private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+    private void printClassVTAble(SymbolTableItem classItem) {
+        String globalVTableName = registerAllocator.allocateVTableRegister(classItem.getId());
+        formatter.formatGlobalVTable(globalVTableName, classItem.getVTable().getMethods().stream()
+                .map(MethodSignature::toLLVMSignature).collect( Collectors.toList()));
     }
 
     @Override
@@ -25,17 +33,9 @@ public class LLVMPreProcessVisitor implements IVisitorWithField<VTableUtils> {
 
     @Override
     public void visit(ClassDecl classDecl) {
-        if (classDecl.superName() != null) {
-
-        }
-
-        for (var fieldDecl : classDecl.fields()) {
-            fieldDecl.accept(this);
-        }
-        for (var methodDecl : classDecl.methoddecls()) {
-            methodDecl.accept(this);
-        }
-
+         SymbolTable symbolTable = astToSymbolTable.getSymbolTable(classDecl);
+         SymbolTableItem classItem = symbolTable.get(classDecl.name());
+         printClassVTAble(classItem);
     }
 
     @Override
@@ -113,27 +113,22 @@ public class LLVMPreProcessVisitor implements IVisitorWithField<VTableUtils> {
 
     @Override
     public void visit(AndExpr e) {
-        visitBinaryExpr(e, "&&");
     }
 
     @Override
     public void visit(LtExpr e) {
-        visitBinaryExpr(e, "<");
     }
 
     @Override
     public void visit(AddExpr e) {
-        visitBinaryExpr(e, "+");
     }
 
     @Override
     public void visit(SubtractExpr e) {
-        visitBinaryExpr(e, "-");
     }
 
     @Override
     public void visit(MultExpr e) {
-        visitBinaryExpr(e, "*");
     }
 
     @Override
@@ -215,7 +210,7 @@ public class LLVMPreProcessVisitor implements IVisitorWithField<VTableUtils> {
     }
 
     @Override
-    public VTableUtils getField() {
-        return vTable;
+    public ClassInfo getField() {
+        return classesInfo;
     }
 }
