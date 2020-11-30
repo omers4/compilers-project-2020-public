@@ -404,9 +404,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         // TODO bitcast to the method signature
         appendWithIndent(formatter.formatBitcast(methodRegister, LLVMType.Byte, vtableEntryRegister, LLVMType.AddressPointer));
 
-
-
-        String methodLocation = currentRegisterName;
         for (Expr arg : e.actuals()) {
             arg.accept(this);
             var astFormalType = methodSig.getFormals().get(i).type();
@@ -416,7 +413,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String callResult = registerAllocator.allocateNewTempRegister();
         currentRegisterName = callResult;
         currentRegisterType = methodSig.getRet();
-        appendWithIndent(formatter.formatCall(callResult, ASTypeToLLVMType(methodSig.getRet()), methodLocation, actuals));
+        appendWithIndent(formatter.formatCall(callResult, ASTypeToLLVMType(methodSig.getRet()), methodRegister, actuals));
     }
 
     /////////////////////Expression/////////////////////
