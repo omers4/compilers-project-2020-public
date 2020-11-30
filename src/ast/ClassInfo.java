@@ -9,6 +9,7 @@ import static java.util.Map.entry;
 public class ClassInfo {
 
     private Map<String, ObjectVTable> classesToInfo = new HashMap<>();
+
     Map<Class, Integer> astTypeToSize = Map.ofEntries(
             entry(BoolAstType.class, 4),
             entry(IntArrayAstType.class, 4),
@@ -20,6 +21,8 @@ public class ClassInfo {
         classesToInfo.put(className,info);
     }
 
+    public ObjectVTable getClassVTable(String classId) { return this.classesToInfo.get(classId);}
+
     public int getClassPhysicalSize(String classId) {
         ObjectVTable classInfo = classesToInfo.get(classId);
         int size = 0;
@@ -27,6 +30,6 @@ public class ClassInfo {
             size += astTypeToSize.get(fieldType.getClass());
         }
 
-        return size;
+        return size + 4;
     }
 }

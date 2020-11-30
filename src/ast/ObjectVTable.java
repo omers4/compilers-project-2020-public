@@ -35,14 +35,14 @@ public class ObjectVTable {
         this.methods.put(id,methodSignature);
     }
 
-    public void addOrUpdateMethod(MethodSignature methodSignature) {
+    public void addOrUpdateMethod(String id, MethodSignature methodSignature) {
 
         // TODO: Check when overiding that order preserves
-        this.methods.put(methodSignature.getName(),methodSignature);
+        this.methods.put(id,methodSignature);
     }
 
-    public List<MethodSignature> getMethods() {
-        return new ArrayList<>(this.methods.values());
+    public LinkedHashMap<String, MethodSignature> getMethods() {
+        return this.methods;
     }
 
     public LinkedHashMap<String, AstType> getFields() {

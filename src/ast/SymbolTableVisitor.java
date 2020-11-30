@@ -27,8 +27,8 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
                 vTable.addField(entry.getKey(),entry.getValue());
             }
 
-            for (MethodSignature methodSignature : parentClassItem.getVTable().getMethods()) {
-                vTable.addOrUpdateMethod(methodSignature);
+            for (var entry : parentClassItem.getVTable().getMethods().entrySet()) {
+                vTable.addOrUpdateMethod(entry.getKey(), entry.getValue());
             }
         }
 
@@ -55,11 +55,17 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
     @Override
     public void visit(Program program) {
+        // Order matters. We first connect the Ast to a new SymbolTable and then we add it to the mapping using peek
+        _symbolTableHierarchy.push((new SymbolTable(null)));
+        _astToSymbolTable.addMapping(program, _symbolTableHierarchy.peek());
+
         program.mainClass().accept(this);
 
         for (ClassDecl classdecl : program.classDecls()) {
             classdecl.accept(this);
         }
+
+        // put all class vtable here in the top symbolTable
     }
 
     @Override
@@ -92,11 +98,6 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
     @Override
     public void visit(MainClass mainClass) {
-
-        // Order matters. We first connect the Ast to a new SymbolTable and then we add it to the mapping using peek
-        _symbolTableHierarchy.push((new SymbolTable(null)));
-        _astToSymbolTable.addMapping(mainClass, _symbolTableHierarchy.peek());
-
         mainClass.mainStatement().accept(this);
     }
 
