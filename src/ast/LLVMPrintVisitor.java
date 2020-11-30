@@ -506,8 +506,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ; In our case, we have a single int field so it's 4 + 8 = 12 bytes
 //                %_0 = call i8* @calloc(i32 1, i32 12)
         String objectRegister = registerAllocator.allocateNewTempRegister();
-//        var dynamicClassItem = this.symbolTable.getSymbolTable(e).get(e.classId());
-        int classSize = 8;
+        int classSize = classInfo.getClassVTable(e.classId()).getClassPhysicalSize();
         List<LLVMMethodParam> allocationParams = new ArrayList<>();
         allocationParams.add(new LLVMMethodParam(LLVMType.Int,"1"));
         allocationParams.add(new LLVMMethodParam(LLVMType.Int, Integer.toString(classSize)));
