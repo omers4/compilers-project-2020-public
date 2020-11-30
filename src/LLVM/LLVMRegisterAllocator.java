@@ -2,6 +2,7 @@ package LLVM;
 
 import ast.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -13,6 +14,7 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
 
     public LLVMRegisterAllocator(IAstToSymbolTable symbolTable) {
         _astToSymbolTable = symbolTable;
+        _classIDToVTable = new HashMap<>();
         _counter = 0;
     }
 

@@ -89,6 +89,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(Program program) {
+        ast.LLVMPreProcessVisitor preProcessVisitor = new ast.LLVMPreProcessVisitor(symbolTable,formatter,registerAllocator);
+        preProcessVisitor.visit(program);
         builder.append(getHelperFunctions());
 
         program.mainClass().accept(this);
