@@ -4,23 +4,27 @@ import LLVM.*;
 
 import java.util.stream.Collectors;
 
-public class LLVMPreProcessVisitor implements IVisitorWithField<ClassInfo> {
+public class LLVMPreProcessVisitor implements IVisitorWithField<String> {
 
     private IAstToSymbolTable astToSymbolTable;
     private ILLVMCommandFormatter formatter;
     private ILLVMRegisterAllocator registerAllocator;
-    private ClassInfo classesInfo;
+    private StringBuilder stringBuilder;
+    private ClassInfo classInfo;
 
     public LLVMPreProcessVisitor(IAstToSymbolTable astToSymbolTable, ILLVMCommandFormatter formatter, ILLVMRegisterAllocator registerAllocator) {
         this.astToSymbolTable = astToSymbolTable;
         this.formatter = formatter;
         this.registerAllocator = registerAllocator;
+        this.stringBuilder = new StringBuilder();
+        this.classInfo = new ClassInfo();
     }
 
     private void printClassVTAble(SymbolTableItem classItem) {
         String globalVTableName = registerAllocator.allocateVTableRegister(classItem.getId());
-        formatter.formatGlobalVTable(globalVTableName, classItem.getVTable().getMethods().stream()
-                .map(MethodSignature::toLLVMSignature).collect( Collectors.toList()));
+        classInfo.addClassInfo(classItem.getId(), classItem.getVTable());
+        stringBuilder.append(formatter.formatGlobalVTable(globalVTableName, classItem.getVTable().getMethods().values().stream()
+                .map(MethodSignature::toLLVMSignature).collect( Collectors.toList())));
     }
 
     @Override
@@ -210,7 +214,9 @@ public class LLVMPreProcessVisitor implements IVisitorWithField<ClassInfo> {
     }
 
     @Override
-    public ClassInfo getField() {
-        return classesInfo;
+    public String getField() {
+        return stringBuilder.toString();
     }
+
+    public ClassInfo getClassInfo() { return this.classInfo; }
 }
