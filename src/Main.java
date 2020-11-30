@@ -37,6 +37,7 @@ public class Main {
                     throw new UnsupportedOperationException("TODO - Ex. 3");
 
                 } else if (action.equals("compile")) {
+                    var hierarchy = new ClassHierarchyForest(prog);
                     IVisitorWithField<IAstToSymbolTable> symbolTableVisitor = new SymbolTableVisitor<>();
                     symbolTableVisitor.visit(prog);
                     var astToSymbolTable = symbolTableVisitor.getField();
@@ -45,7 +46,7 @@ public class Main {
 
                     ILLVMCommandFormatter commandFormatter = new LLVMCommandFormatter();
                     Visitor preProcessVisitor = new LLVMPreProcessVisitor(astToSymbolTable, commandFormatter, registerAllocator);
-                    var llvmPrinter = new LLVMPrintVisitor(astToSymbolTable, registerAllocator, commandFormatter);
+                    var llvmPrinter = new LLVMPrintVisitor(astToSymbolTable, registerAllocator, commandFormatter, hierarchy);
                     llvmPrinter.visit(prog);
                     outFile.write(llvmPrinter.getString());
 
