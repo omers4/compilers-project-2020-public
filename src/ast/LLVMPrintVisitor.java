@@ -391,21 +391,21 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         int i = 0;
 
         e.ownerExpr().accept(this);  // can be this.foo() (new A()).foo x.foo
-        // TODO get class from currentRegisterType
+        // TODO understand why failing and remove the hierrarchy
         RefType ref = (RefType) currentRegisterType;
-        var classDecl = classHierarchy.getClassDeclByName(ref.id());
-        var method = null;
+        var methodSig = classInfo.getClassVTable(ref.id()).getMethods().get(e.methodId());
 
         String methodLocation = currentRegisterName;
         for (Expr arg : e.actuals()) {
             arg.accept(this);
-            var astFormalType = currentRegisterType;
-            actuals.add(new LLVMMethodParam(ASTypeToLLVMType(currentRegisterType), currentRegisterName));
+            var astFormalType = methodSig.getFormals().get(i).type();
+            actuals.add(new LLVMMethodParam(ASTypeToLLVMType(astFormalType), currentRegisterName));
             i++;
         }
         String callResult = registerAllocator.allocateNewTempRegister();
         currentRegisterName = callResult;
-        appendWithIndent(formatter.formatCall(callResult, ASTypeToLLVMType(currentRegisterType), methodLocation, actuals));
+        currentRegisterType = methodSig.getRet();
+        appendWithIndent(formatter.formatCall(callResult, ASTypeToLLVMType(methodSig.getRet()), methodLocation, actuals));
     }
 
     /////////////////////Expression/////////////////////
