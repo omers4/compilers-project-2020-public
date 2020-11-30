@@ -377,19 +377,21 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(MethodCallExpr e) {
         ArrayList<LLVMMethodParam> actuals = new ArrayList<>();
-        // TODO resolve the method we are calling
+        var dynamicMethodItem = this.symbolTable.getSymbolTable(e).get(e.methodId());
+        var signature = dynamicMethodItem.getMethodSignature();
+        int i = 0;
 
         e.ownerExpr().accept(this);  // can be this.foo() (new A()).foo x.foo
         String methodLocation = currentRegisterName;
         for (Expr arg : e.actuals()) {
             arg.accept(this);
-            // TODO type - once we resolve the method
-            actuals.add(new LLVMMethodParam(LLVMType.Int, currentRegisterName));
+            var astFormalType = signature.getFormals().get(i).type();
+            actuals.add(new LLVMMethodParam(ASTypeToLLVMType(astFormalType), currentRegisterName));
+            i++;
         }
         String callResult = registerAllocator.allocateNewTempRegister();
         currentRegisterName = callResult;
-        // TODO the real ret type, the real method location - once we resolve the method
-        appendWithIndent(formatter.formatCall(callResult, LLVMType.Int, methodLocation, actuals));
+        appendWithIndent(formatter.formatCall(callResult, ASTypeToLLVMType(signature.getRet()), methodLocation, actuals));
     }
 
     /////////////////////Expression/////////////////////
