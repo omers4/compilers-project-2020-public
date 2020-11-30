@@ -391,9 +391,20 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         int i = 0;
 
         e.ownerExpr().accept(this);  // can be this.foo() (new A()).foo x.foo
-        // TODO understand why failing and remove the hierrarchy
+
         RefType ref = (RefType) currentRegisterType;
         var methodSig = classInfo.getClassVTable(ref.id()).getMethods().get(e.methodId());
+        int methodPos = new ArrayList<String>(classInfo.getClassVTable(ref.id()).getMethods().keySet()).indexOf(e.methodId());
+
+        String vtableRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Address, currentRegisterName, String.format("%d", methodPos), ""));
+        String vtableEntryRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatLoad(vtableEntryRegister, LLVMType.Address, vtableRegister));
+        String methodRegister = registerAllocator.allocateNewTempRegister();
+        // TODO bitcast to the method signature
+        appendWithIndent(formatter.formatBitcast(methodRegister, LLVMType.Byte, vtableEntryRegister, LLVMType.AddressPointer));
+
+
 
         String methodLocation = currentRegisterName;
         for (Expr arg : e.actuals()) {
@@ -453,6 +464,16 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     }
 
     public void visit(ThisExpr e) {
+        String bitcastRegister = registerAllocator.allocateNewTempRegister();
+        LLVMType.Address.setLength(-1);
+        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, "%this", LLVMType.AddressPointer));
+        String objectRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatLoad(objectRegister, LLVMType.AddressPointer, bitcastRegister));
+
+        var refType = new RefType();
+        refType.setId(currentClass.name());
+        currentRegisterName = objectRegister;
+        currentRegisterType = refType;
     }
 
     // new int[length]
@@ -510,7 +531,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         List<LLVMMethodParam> allocationParams = new ArrayList<>();
         allocationParams.add(new LLVMMethodParam(LLVMType.Int,"1"));
         allocationParams.add(new LLVMMethodParam(LLVMType.Int, Integer.toString(classSize)));
-        builder.append(formatter.formatCall(objectRegister, LLVMType.Address, CALLOC, allocationParams));
+        appendWithIndent(formatter.formatCall(objectRegister, LLVMType.Address, CALLOC, allocationParams));
 
 //        ; Next we need to set the vtable pointer to point to the correct vtable (Base_vtable)
 //        ; First we bitcast the object pointer from i8* to i8***
@@ -523,7 +544,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ;		- it's a pointer to a location where we will be storing i8**.
         // %_1 = bitcast i8* %_0 to i8***
         String bitcastRegister = registerAllocator.allocateNewTempRegister();
-        builder.append(formatter.formatBitcast(bitcastRegister, LLVMType.Address,objectRegister, LLVMType.AddressPointerPointer));
+        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Address,objectRegister, LLVMType.AddressPointerPointer));
 
 
 //        ; Get the address of the first element of the Base_vtable
@@ -539,15 +560,16 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
         // TODO: What is the meaning of this 2?
         type.setLength(2);
-        builder.append(formatter.formatGetElementPtr(elementPrtRegister, type, vTableRegister, "0", "0"));
+        appendWithIndent(formatter.formatGetElementPtr(elementPrtRegister, type, vTableRegister, "0", "0"));
+        type.setLength(-1);
 
 //        ; Set the vtable to the correct address.
 //                store i8** %_2, i8*** %_1
-        builder.append(formatter.formatStore(LLVMType.AddressPointer, elementPrtRegister, bitcastRegister));
+        appendWithIndent(formatter.formatStore(LLVMType.AddressPointer, elementPrtRegister, bitcastRegister));
 
 //        ; Store the address of the new object on the stack (var b), as a byte array (i8*).
 //                store i8* %_0, i8** %b
-        builder.append(formatter.formatStore(LLVMType.Void, objectRegister, prevLrRegister));
+        appendWithIndent(formatter.formatStore(LLVMType.Void, objectRegister, prevLrRegister));
 
         var refType = new RefType();
         refType.setId(e.classId());
