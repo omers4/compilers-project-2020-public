@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LLVMPrintVisitor implements IVisitorWithField<String> {
-    private final String CALLOC = "calloc";
+    private final String CALLOC = "@calloc";
 
 
     private final IAstToSymbolTable symbolTable;
@@ -230,7 +230,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         sysoutStatement.arg().accept(this);
         String arg = getField();
         List<LLVMMethodParam> params = Arrays.asList(new LLVMMethodParam(LLVMType.Int, arg));
-        appendWithIndent(formatter.formatCall("", LLVMType.Void, "print_int", params));
+        appendWithIndent(formatter.formatCall("", LLVMType.Void, "@print_int", params));
     }
 
     @Override
@@ -393,6 +393,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         RefType ref = (RefType) currentRegisterType;
         var methodSig = classInfo.getClassVTable(ref.id()).getMethods().get(e.methodId());
         int methodPos = new ArrayList<String>(classInfo.getClassVTable(ref.id()).getMethods().keySet()).indexOf(e.methodId());
+        String objectLocationStr = currentRegisterName;
 
         String bitcastRegister = registerAllocator.allocateNewTempRegister();
         appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, currentRegisterName, LLVMType.AddressPointer));
@@ -406,6 +407,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String methodRegister = registerAllocator.allocateNewTempRegister();
         appendWithIndent(formatter.formatBitcast(methodRegister, LLVMType.Byte, vtableEntryRegister, methodSig.toLLVMSignature()));
 
+
+        actuals.add(new LLVMMethodParam(ASTypeToLLVMType(ref), objectLocationStr));
         for (Expr arg : e.actuals()) {
             arg.accept(this);
             var astFormalType = methodSig.getFormals().get(i).type();
@@ -499,7 +502,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         List<LLVMMethodParam> params = Arrays.asList(
                 new LLVMMethodParam(LLVMType.Int,"4"),
                 new LLVMMethodParam(LLVMType.Int,sizeRegister));
-        appendWithIndent(formatter.formatCall(allocateRegister, LLVMType.Address, "calloc", params));
+        appendWithIndent(formatter.formatCall(allocateRegister, LLVMType.Address, "@calloc", params));
 
         // Cast the returned pointer
         String castedRegister = registerAllocator.allocateNewTempRegister();
@@ -639,16 +642,16 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
                 "@_cint = constant [4 x i8] c\"%d\\0a\\00\"\n" +
                 "@_cOOB = constant [15 x i8] c\"Out of bounds\\0a\\00\"\n" +
                 "define void @print_int(i32 %i) {\n" +
-                "    %_str = bitcast [4 x i8]* @_cint to i8*\n" +
-                "    call i32 (i8*, ...) @printf(i8* %_str, i32 %i)\n" +
-                "    ret void\n" +
+                "\t%_str = bitcast [4 x i8]* @_cint to i8*\n" +
+                "\tcall i32 (i8*, ...) @printf(i8* %_str, i32 %i)\n" +
+                "\tret void\n" +
                 "}\n" +
                 "\n" +
                 "define void @throw_oob() {\n" +
-                "    %_str = bitcast [15 x i8]* @_cOOB to i8*\n" +
-                "    call i32 (i8*, ...) @printf(i8* %_str)\n" +
-                "    call void @exit(i32 1)\n" +
-                "    ret void\n" +
+                "\t%_str = bitcast [15 x i8]* @_cOOB to i8*\n" +
+                "\tcall i32 (i8*, ...) @printf(i8* %_str)\n" +
+                "\tcall void @exit(i32 1)\n" +
+                "\tret void\n" +
                 "}\n"+
                 "\n";
         return helper;
@@ -673,7 +676,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
         // Size/index was negative, throw negative size exception
         builder.append(formatter.formatLabelName(labelNeg));
-        appendWithIndent(formatter.formatCall("", LLVMType.Void, "throw_oob", null));
+        appendWithIndent(formatter.formatCall("", LLVMType.Void, "@throw_oob", null));
         appendWithIndent(formatter.formatBreak(labelPos));
 
         // All ok, we can proceed with the allocation/access
