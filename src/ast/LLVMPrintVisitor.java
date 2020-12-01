@@ -126,6 +126,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         appendWithIndent(formatter.formatReturn(LLVMType.Int, "0"));
         indent--;
         builder.append("}\n\n");
+        registerAllocator.resetCounter();
     }
 
     @Override
