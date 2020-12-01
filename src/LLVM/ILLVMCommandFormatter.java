@@ -29,7 +29,7 @@ public interface ILLVMCommandFormatter {
     String formatLoad(String register, LLVMType valueType, String sourcePointer);
 
     /* %result = call i8* @calloc(i32 1, i32 %val)
-     * -> formatCall("%result", LLVMType.IntPointer, "calloc",
+     * -> formatCall("%result", LLVMType.IntPointer, "@calloc",
      * new List(){new LLVMMethodParam(LLVMType.Int, "1"), new LLVMMethodParam(LLVMType.Int, "%val")}) */
     String formatCall(String register, LLVMType retType, String methodName, List<LLVMMethodParam> params);
 

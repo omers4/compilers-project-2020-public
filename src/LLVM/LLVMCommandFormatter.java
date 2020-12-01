@@ -73,9 +73,18 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
             paramsString = "";
 
         if (retType == LLVMType.Void) {
-            return String.format("call %s @%s(%s)\n", retType.toString(), methodName, paramsString);
+            String voidParamsString = "";
+            List<String> paramsTypes = new ArrayList<>();
+            if (params != null && !params.isEmpty()) {
+                for (var param : params) {
+                    paramsTypes.add(param.getType().toString());
+                }
+                voidParamsString = String.format(" (%s)", String.join(",", paramsTypes));
+            }
+
+            return String.format("call %s%s %s(%s)\n", retType.toString(), voidParamsString, methodName, paramsString);
         }
-        return String.format("%s = call %s @%s(%s)\n", register,
+        return String.format("%s = call %s %s(%s)\n", register,
                 retType.toString(), methodName, paramsString);
     }
 
