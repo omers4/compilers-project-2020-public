@@ -209,9 +209,11 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(WhileStatement whileStatement) {
 
-        String while0 = getNextLabel(); // check condition
-        String while1 = getNextLabel(); // while body
-        String while2 = getNextLabel(); // after body block
+        String while0 = "loop" + getNextLabel(); // check condition
+        String while1 = "loop" + getNextLabel(); // while body
+        String while2 = "loop" + getNextLabel(); // after body block
+
+        appendWithIndent(formatter.formatBreak(while0));
 
         builder.append(formatter.formatLabelName(while0));
         whileStatement.cond().accept(this);
@@ -328,10 +330,12 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         e.e1().accept(this);
         String register_e1 = this.getField();
 
-        String andcond0 = getNextLabel(); // check result, short circuit if false
-        String andcond1 = getNextLabel(); // check e2
-        String andcond2 = getNextLabel(); // this label seems redundant, but this becomes useful when compiling expressions a && b && c
-        String andcond3 = getNextLabel(); // get appropriate value, depending on the predecessor block
+        String andcond0 = "andcond" + getNextLabel(); // check result, short circuit if false
+        String andcond1 = "andcond" + getNextLabel(); // check e2
+        String andcond2 = "andcond" +  getNextLabel(); // this label seems redundant, but this becomes useful when compiling expressions a && b && c
+        String andcond3 = "andcond" + getNextLabel(); // get appropriate value, depending on the predecessor block
+
+        appendWithIndent(formatter.formatBreak(andcond0));
 
         builder.append(formatter.formatLabelName(andcond0));
         appendWithIndent(formatter.formatConditionalBreak(register_e1, andcond1, andcond3));
@@ -461,19 +465,21 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     // create boolean register with the value 1, set currentRegisterName.
     @Override
     public void visit(TrueExpr e) {
-        String resultRegister = registerAllocator.allocateNewTempRegister();
-        currentRegisterName = resultRegister;
+        currentRegisterName = "1";
         currentRegisterType = new BoolAstType();
-        appendWithIndent(formatter.formatAnd(resultRegister, LLVMType.Boolean,"1", "1"));
+        /*String resultRegister = registerAllocator.allocateNewTempRegister();
+        currentRegisterName = resultRegister;
+        appendWithIndent(formatter.formatAnd(resultRegister, LLVMType.Boolean,"1", "1"));*/
     }
 
     // create boolean register with the value 0, set currentRegisterName.
     @Override
     public void visit(FalseExpr e) {
-        String resultRegister = registerAllocator.allocateNewTempRegister();
-        currentRegisterName = resultRegister;
+        currentRegisterName = "0";
         currentRegisterType = new BoolAstType();
-        appendWithIndent(formatter.formatAnd(resultRegister, LLVMType.Boolean,"0", "0"));
+        /*String resultRegister = registerAllocator.allocateNewTempRegister();
+        currentRegisterName = resultRegister;
+        appendWithIndent(formatter.formatAnd(resultRegister, LLVMType.Boolean,"0", "0"));*/
     }
 
     @Override
