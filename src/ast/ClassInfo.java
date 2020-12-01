@@ -11,10 +11,10 @@ public class ClassInfo {
     private Map<String, ObjectVTable> classesToInfo = new HashMap<>();
 
     Map<Class, Integer> astTypeToSize = Map.ofEntries(
-            entry(BoolAstType.class, 4),
-            entry(IntArrayAstType.class, 4),
-            entry(IntAstType.class, 8),
-            entry(RefType.class, 4)
+            entry(BoolAstType.class, 1),
+            entry(IntArrayAstType.class, 8),
+            entry(IntAstType.class, 4),
+            entry(RefType.class, 8)
     );
 
     public void addClassInfo(String className, ObjectVTable info) {
@@ -30,6 +30,6 @@ public class ClassInfo {
             size += astTypeToSize.get(fieldType.getClass());
         }
 
-        return size + 4;
+        return size + 8;
     }
 }

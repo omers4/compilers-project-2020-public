@@ -121,7 +121,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
 
     @Override
     public String formatConditionalBreak(String booleanRegister, String ifLabel, String elseLabel) {
-        return String.format("br i1 %s, label %s, label %s\n", booleanRegister, ifLabel, elseLabel);
+        return String.format("br i1 %s, label %s%s, label %s%s\n", booleanRegister, "%", ifLabel, "%", elseLabel);
     }
 
     @Override
