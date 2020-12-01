@@ -20,7 +20,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     private ILLVMCommandFormatter formatter;
     private LLVMRegisterAllocator registerAllocator;
     private ClassDecl currentClass;
-    private String prevLrRegister;
     private ClassInfo classInfo;
 
     public String getString() {
@@ -237,7 +236,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(AssignStatement assignStatement) {
         String dest = registerAllocator.allocateAddressRegister(assignStatement.lv(), assignStatement);
-        prevLrRegister = dest;
         assignStatement.rv().accept(this);
         var symbolTableOfStmt = symbolTable.getSymbolTable(assignStatement);
         var symbolTableEntry = symbolTableOfStmt.get(assignStatement.lv());
@@ -524,7 +522,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ; In our case, we have a single int field so it's 4 + 8 = 12 bytes
 //                %_0 = call i8* @calloc(i32 1, i32 12)
         String objectRegister = registerAllocator.allocateNewTempRegister();
-        int classSize = classInfo.getClassVTable(e.classId()).getClassPhysicalSize();
+        int classSize = classInfo.getClassPhysicalSize(e.classId());
         List<LLVMMethodParam> allocationParams = new ArrayList<>();
         allocationParams.add(new LLVMMethodParam(LLVMType.Int,"1"));
         allocationParams.add(new LLVMMethodParam(LLVMType.Int, Integer.toString(classSize)));
@@ -564,9 +562,9 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //                store i8** %_2, i8*** %_1
         appendWithIndent(formatter.formatStore(LLVMType.AddressPointer, elementPrtRegister, bitcastRegister));
 
-//        ; Store the address of the new object on the stack (var b), as a byte array (i8*).
-//                store i8* %_0, i8** %b
-        appendWithIndent(formatter.formatStore(LLVMType.Void, objectRegister, prevLrRegister));
+////        ; Store the address of the new object on the stack (var b), as a byte array (i8*).
+////                store i8* %_0, i8** %b
+//        appendWithIndent(formatter.formatStore(LLVMType.Void, objectRegister, prevLrRegister));
 
         var refType = new RefType();
         refType.setId(e.classId());

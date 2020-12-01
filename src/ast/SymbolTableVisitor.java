@@ -59,13 +59,14 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         _symbolTableHierarchy.push((new SymbolTable(null)));
         _astToSymbolTable.addMapping(program, _symbolTableHierarchy.peek());
 
+        // TODO: run over classes, add to private filed that contains VTable to Class ID
+        // TODO: When encounter object, add to symboltableItem it's VTAble
+
         program.mainClass().accept(this);
 
         for (ClassDecl classdecl : program.classDecls()) {
             classdecl.accept(this);
         }
-
-        // put all class vtable here in the top symbolTable
     }
 
     @Override
