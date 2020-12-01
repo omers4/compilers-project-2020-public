@@ -539,7 +539,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ;		- it's a pointer to a location where we will be storing i8**.
         // %_1 = bitcast i8* %_0 to i8***
         String bitcastRegister = registerAllocator.allocateNewTempRegister();
-        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Address,objectRegister, LLVMType.AddressPointer));
+        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte,objectRegister, LLVMType.AddressPointer));
 
 
 //        ; Get the address of the first element of the Base_vtable
