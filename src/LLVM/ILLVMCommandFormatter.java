@@ -67,6 +67,7 @@ public interface ILLVMCommandFormatter {
     /* %ptr = bitcast i32* %ptr2 to i8**
      * -> formatLabelName("%ptr", LLVMType.IntPointer, "%ptr2", LLVMType.IntPointer2) */
     String formatBitcast(String register, LLVMType fromType, String fromRegister, LLVMType toType);
+    String formatBitcast(String register, LLVMType fromType, String fromRegister, LLVMMethodSignature signature);
 
     /* %ptr_idx = getelementptr i8, i8* %ptr, i32 %idx
      * -> formatGetElementPtr("%ptr_idx", LLVMType.Byte, "%idx", 0, -1) */
