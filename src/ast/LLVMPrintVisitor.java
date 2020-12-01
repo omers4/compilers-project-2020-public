@@ -539,7 +539,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ;		- it's a pointer to a location where we will be storing i8**.
         // %_1 = bitcast i8* %_0 to i8***
         String bitcastRegister = registerAllocator.allocateNewTempRegister();
-        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Address,objectRegister, LLVMType.AddressPointerPointer));
+        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Address,objectRegister, LLVMType.AddressPointer));
 
 
 //        ; Get the address of the first element of the Base_vtable
@@ -549,12 +549,12 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 //        ;   * The third and fourth arguments are indexes
 //        ;; (alternative to getelementpr: %_2 = bitcast [2 x i8*]* @.Base_vtable to i8**)
         // %_2 = getelementptr [2 x i8*], [2 x i8*]* @.Base_vtable, i32 0, i32 0
-        String vTableRegister = registerAllocator.allocateAddressRegister(e.classId(), e);
+        String vTableRegister = registerAllocator.allocateVTableRegister(e.classId());
         String elementPrtRegister = registerAllocator.allocateNewTempRegister();
         LLVMType type = LLVMType.Address;
 
         // TODO: What is the meaning of this 2?
-        type.setLength(2);
+        type.setLength(classInfo.getClassVTable(e.classId()).getMethods().size());
         appendWithIndent(formatter.formatGetElementPtr(elementPrtRegister, type, vTableRegister, "0", "0"));
         type.setLength(-1);
 
