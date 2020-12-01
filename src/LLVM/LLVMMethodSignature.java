@@ -14,6 +14,15 @@ public class LLVMMethodSignature {
         this.params=params;
     }
 
+    public String toShortString() {
+        List<String> paramsString = new ArrayList<>();
+        for (var param: params) {
+            paramsString.add(param.getType().toString());
+        }
+
+        return String.format("%s (%s)", ret.toString(), String.join(", ", paramsString));
+    }
+
     public String toString() {
         List<String> paramsString = new ArrayList<>();
         for (var param: params) {
