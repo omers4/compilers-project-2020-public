@@ -184,9 +184,9 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(IfStatement ifStatement) {
 
-        String if0 = getNextLabel(); // then case
-        String if1 = getNextLabel(); // else case
-        String if2 = getNextLabel(); // after else block
+        String if0 = String.format("if%s", getNextLabel()); // then case
+        String if1 = String.format("if%s", getNextLabel()); // else case
+        String if2 = String.format("if%s", getNextLabel()); // after else block
 
         ifStatement.cond().accept(this);
         String condRegister = this.getField();
