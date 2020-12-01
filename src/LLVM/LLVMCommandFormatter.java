@@ -75,10 +75,10 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
         if (retType == LLVMType.Void) {
             String voidParamsString = "";
             List<String> paramsTypes = new ArrayList<>();
-            for (var param : params) {
-                paramsTypes.add(param.getType().toString());
-            }
-            if (!params.isEmpty()) {
+            if (params != null && !params.isEmpty()) {
+                for (var param : params) {
+                    paramsTypes.add(param.getType().toString());
+                }
                 voidParamsString = String.format(" (%s)", String.join(",", paramsTypes));
             }
 

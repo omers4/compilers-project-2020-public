@@ -109,9 +109,9 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(ClassDecl classDecl) {
         currentClass = classDecl;
-        for (var fieldDecl : classDecl.fields()) {
-            fieldDecl.accept(this);
-        }
+//        for (var fieldDecl : classDecl.fields()) {
+//            fieldDecl.accept(this);
+//        }
         for (var methodDecl : classDecl.methoddecls()) {
             methodDecl.accept(this);
         }
@@ -155,6 +155,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
         indent--;
         builder.append("}\n\n");
+        registerAllocator.resetCounter();
     }
 
     @Override
@@ -456,13 +457,31 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(IdentifierExpr e) {
-        String tempRegister = registerAllocator.allocateNewTempRegister();
         String resultRegister = registerAllocator.allocateAddressRegister(e.id(), e);
-        currentRegisterName = tempRegister;
         var symbolTableOfStmt = symbolTable.getSymbolTable(e);
         var symbolTableEntry = symbolTableOfStmt.get(e.id());
+        /*
+        TODO if varDecl is a field, include the following
+        %_1 = getelementptr i8, i8* %this, i32 8
+        %_2 = bitcast i8* %_1 to i32*
+        */
+
+        var field = classInfo.getClassVTable(currentClass.name()).getFields().get(e.id());
+        if (field != null) {
+            String vtableRegister = registerAllocator.allocateNewTempRegister();
+            appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Byte, "%this", String.format("%d", 2), ""));
+            String bitcastRegister = registerAllocator.allocateNewTempRegister();
+            appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, vtableRegister, LLVMType.AddressPointer));
+            resultRegister = bitcastRegister;
+            // TODO cast to the right size
+            // TODO load the correct register
+            // TODO handle store to field
+        }
+        String tempRegister = registerAllocator.allocateNewTempRegister();
+        currentRegisterName = tempRegister;
         currentRegisterType = symbolTableEntry.getType();
         appendWithIndent(formatter.formatLoad(tempRegister, ASTypeToLLVMType(symbolTableEntry.getType()), resultRegister));
+
     }
 
     public void visit(ThisExpr e) {
@@ -669,8 +688,8 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         else
             appendWithIndent(formatter.formatCompare( condRegister, ComparisonType.LessOrEquals , LLVMType.Int, length, index));
 
-        String labelNeg = getNextLabel();
-        String labelPos = getNextLabel();
+        String labelNeg = String.format("arr_alloc%s", getNextLabel());
+        String labelPos = String.format("arr_alloc%s", getNextLabel());
 
         appendWithIndent(formatter.formatConditionalBreak(condRegister, labelNeg, labelPos));
 
