@@ -234,13 +234,33 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         appendWithIndent(formatter.formatCall("", LLVMType.Void, "@print_int", params));
     }
 
+    private String loadFieldOrLocalVar(AstNode context, String name) {
+        String resultRegister = registerAllocator.allocateAddressRegister(name, context);
+        var symbolTableOfStmt = symbolTable.getSymbolTable(context);
+        var symbolTableEntry = symbolTableOfStmt.get(name);
+
+        var field = classInfo.getClassVTable(currentClass.name()).getFields().get(name);
+        if (field != null) {
+            String vtableRegister = registerAllocator.allocateNewTempRegister();
+            // TODO put the right field offset
+            appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Byte, "%this", String.format("%d", 2), ""));
+            String bitcastRegister = registerAllocator.allocateNewTempRegister();
+            appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, vtableRegister, ASTypeToLLVMType(symbolTableEntry.getType())));
+            resultRegister = bitcastRegister;
+        }
+        return resultRegister;
+    }
+
     @Override
     public void visit(AssignStatement assignStatement) {
-        String dest = registerAllocator.allocateAddressRegister(assignStatement.lv(), assignStatement);
         assignStatement.rv().accept(this);
+        String valueLocation = currentRegisterName;
+
+        var where = loadFieldOrLocalVar(assignStatement, assignStatement.lv());
+
         var symbolTableOfStmt = symbolTable.getSymbolTable(assignStatement);
         var symbolTableEntry = symbolTableOfStmt.get(assignStatement.lv());
-        appendWithIndent(formatter.formatStore(ASTypeToLLVMType(symbolTableEntry.getType()), currentRegisterName, dest));
+        appendWithIndent(formatter.formatStore(ASTypeToLLVMType(symbolTableEntry.getType()), valueLocation, where));
     }
 
     // implements the array store arr[index] = rv
@@ -457,26 +477,11 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(IdentifierExpr e) {
-        String resultRegister = registerAllocator.allocateAddressRegister(e.id(), e);
         var symbolTableOfStmt = symbolTable.getSymbolTable(e);
         var symbolTableEntry = symbolTableOfStmt.get(e.id());
-        /*
-        TODO if varDecl is a field, include the following
-        %_1 = getelementptr i8, i8* %this, i32 8
-        %_2 = bitcast i8* %_1 to i32*
-        */
 
-        var field = classInfo.getClassVTable(currentClass.name()).getFields().get(e.id());
-        if (field != null) {
-            String vtableRegister = registerAllocator.allocateNewTempRegister();
-            appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Byte, "%this", String.format("%d", 2), ""));
-            String bitcastRegister = registerAllocator.allocateNewTempRegister();
-            appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, vtableRegister, LLVMType.AddressPointer));
-            resultRegister = bitcastRegister;
-            // TODO cast to the right size
-            // TODO load the correct register
-            // TODO handle store to field
-        }
+        String resultRegister = loadFieldOrLocalVar(e, e.id());
+
         String tempRegister = registerAllocator.allocateNewTempRegister();
         currentRegisterName = tempRegister;
         currentRegisterType = symbolTableEntry.getType();
@@ -485,15 +490,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     }
 
     public void visit(ThisExpr e) {
-//        String bitcastRegister = registerAllocator.allocateNewTempRegister();
-//        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, "%this", LLVMType.AddressPointer));
-//        String objectRegister = registerAllocator.allocateNewTempRegister();
-//        appendWithIndent(formatter.formatLoad(objectRegister, LLVMType.AddressPointer, bitcastRegister));
-//
-//        var refType = new RefType();
-//        refType.setId(currentClass.name());
-//        currentRegisterName = objectRegister;
-//        currentRegisterType = refType;
 
         var refType = new RefType();
         refType.setId(currentClass.name());
