@@ -163,7 +163,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String reg_name = registerAllocator.allocateAddressRegister(formalArg.name(), formalArg);
         formalArg.type().accept(this);
         appendWithIndent(formatter.formatAlloca(reg_name, ASTypeToLLVMType(formalArg.type())));
-        appendWithIndent(formatter.formatStore(LLVMType.Int, formatter.formatRegisterName(formatter.formatFormalArgName(formalArg.name())), reg_name));
+        appendWithIndent(formatter.formatStore(ASTypeToLLVMType(formalArg.type()), formatter.formatRegisterName(formatter.formatFormalArgName(formalArg.name())), reg_name));
     }
 
     @Override
