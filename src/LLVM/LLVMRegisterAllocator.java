@@ -24,8 +24,13 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
         try {
             SymbolTableItem item = symbolTable.get(name);
             if (null == item.getRegisterId()) {
-                ++_counter;
-                item.setRegisterId("%_" + name + String.valueOf(_counter));
+                String ext = "";
+
+                if (_counter > 0) {
+                    ext = String.valueOf(_counter);
+                }
+                item.setRegisterId("%" + name + ext);
+                _counter++;
             }
 
             return item.getRegisterId();
@@ -38,8 +43,9 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
 
     @Override
     public String allocateNewTempRegister() {
-        ++_counter;
-        return "%_" + String.valueOf(_counter);
+        String result = "%_" + String.valueOf(_counter);
+        _counter++;
+        return result;
     }
 
     @Override
@@ -51,5 +57,9 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
         String newRegisterID = "@." + classID + "_vtable";
         _classIDToVTable.put(classID, newRegisterID);
         return newRegisterID;
+    }
+
+    public void resetCounter() {
+        _counter = 0;
     }
 }
