@@ -142,6 +142,13 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
     }
 
     @Override
+    public String formatBitcast(String register, LLVMType fromType, String fromRegister, LLVMMethodSignature signature) {
+        return String.format("%s = bitcast %s* %s to %s*\n",
+                register, fromType.toString(),
+                fromRegister, signature.toShortString());
+    }
+
+    @Override
     public String formatGetElementPtr(String register, LLVMType type, String pointerRegister, String rowIndex, String columnIndex) {
         String secondIndex = "";
         if (columnIndex != "") {

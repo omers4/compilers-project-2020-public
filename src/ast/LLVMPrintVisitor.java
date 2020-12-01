@@ -126,6 +126,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         appendWithIndent(formatter.formatReturn(LLVMType.Int, "0"));
         indent--;
         builder.append("}\n\n");
+        registerAllocator.resetCounter();
     }
 
     @Override
@@ -401,8 +402,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String vtableEntryRegister = registerAllocator.allocateNewTempRegister();
         appendWithIndent(formatter.formatLoad(vtableEntryRegister, LLVMType.Address, vtableRegister));
         String methodRegister = registerAllocator.allocateNewTempRegister();
-        // TODO bitcast to the method signature
-        appendWithIndent(formatter.formatBitcast(methodRegister, LLVMType.Byte, vtableEntryRegister, LLVMType.AddressPointer));
+        appendWithIndent(formatter.formatBitcast(methodRegister, LLVMType.Byte, vtableEntryRegister, methodSig.toLLVMSignature()));
 
         for (Expr arg : e.actuals()) {
             arg.accept(this);
