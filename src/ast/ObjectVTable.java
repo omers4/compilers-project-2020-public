@@ -10,6 +10,13 @@ import static java.util.Map.entry;
 
 public class ObjectVTable {
 
+    Map<Class, Integer> astTypeToSize = Map.ofEntries(
+            entry(BoolAstType.class, 1),
+            entry(IntArrayAstType.class, 8),
+            entry(IntAstType.class, 4),
+            entry(RefType.class, 8)
+    );
+
     private String Id;
     private LinkedHashMap<String, AstType> fields;
     private LinkedHashMap<String, MethodSignature> methods;
@@ -26,6 +33,18 @@ public class ObjectVTable {
     public int getMethodIndex(String method) {
         MethodSignature methodSignature = methods.get(method);
 return 1;
+    }
+
+    public int getFieldIndex(String field) {
+        int size = 0;
+        for (var entry : fields.entrySet()) {
+            if (entry.getKey().equals(field))
+                return size + 8;
+
+            size += astTypeToSize.get(entry.getValue().getClass());
+        }
+
+        return -1;
     }
 
     public void addField(String id, AstType type) {

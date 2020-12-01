@@ -238,12 +238,13 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String resultRegister = registerAllocator.allocateAddressRegister(name, context);
         var symbolTableOfStmt = symbolTable.getSymbolTable(context);
         var symbolTableEntry = symbolTableOfStmt.get(name);
-
-        var field = classInfo.getClassVTable(currentClass.name()).getFields().get(name);
+        ObjectVTable objectVtable = classInfo.getClassVTable(currentClass.name());
+        var field = objectVtable.getFields().get(name);
         if (field != null) {
             String vtableRegister = registerAllocator.allocateNewTempRegister();
             // TODO put the right field offset
-            appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Byte, "%this", String.format("%d", 2), ""));
+            int fieldOffset = objectVtable.getFieldIndex(name);
+            appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Byte, "%this", String.format("%d", fieldOffset), ""));
             String bitcastRegister = registerAllocator.allocateNewTempRegister();
             appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, vtableRegister, ASTypeToLLVMType(symbolTableEntry.getType())));
             resultRegister = bitcastRegister;
@@ -579,7 +580,6 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String elementPrtRegister = registerAllocator.allocateNewTempRegister();
         LLVMType type = LLVMType.Address;
 
-        // TODO: What is the meaning of this 2?
         type.setLength(classInfo.getClassVTable(e.classId()).getMethods().size());
         appendWithIndent(formatter.formatGetElementPtr(elementPrtRegister, type, vTableRegister, "0", "0"));
         type.setLength(-1);
