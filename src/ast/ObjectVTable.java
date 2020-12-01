@@ -23,21 +23,21 @@ public class ObjectVTable {
         methods = new LinkedHashMap<>();
     }
 
+    public int getMethodIndex(String method) {
+        MethodSignature methodSignature = methods.get(method);
+return 1;
+    }
+
     public void addField(String id, AstType type) {
         fields.put(id,type);
     }
 
     public void addOrUpdateMethod(String id, String className, MethodDecl methodDecl) {
-
         MethodSignature methodSignature = new MethodSignature("@"+className+"."+id, methodDecl.returnType(), methodDecl.formals());
-
-        // TODO: Check when overiding that order preserves
         this.methods.put(id,methodSignature);
     }
 
     public void addOrUpdateMethod(String id, MethodSignature methodSignature) {
-
-        // TODO: Check when overiding that order preserves
         this.methods.put(id,methodSignature);
     }
 
@@ -48,9 +48,4 @@ public class ObjectVTable {
     public LinkedHashMap<String, AstType> getFields() {
         return this.fields;
     }
-
-    public int getClassPhysicalSize() {
-        return 2;
-    }
-
 }
