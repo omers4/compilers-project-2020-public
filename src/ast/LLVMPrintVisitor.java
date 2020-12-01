@@ -390,13 +390,17 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         int i = 0;
 
         e.ownerExpr().accept(this);  // can be this.foo() (new A()).foo x.foo
-
         RefType ref = (RefType) currentRegisterType;
         var methodSig = classInfo.getClassVTable(ref.id()).getMethods().get(e.methodId());
         int methodPos = new ArrayList<String>(classInfo.getClassVTable(ref.id()).getMethods().keySet()).indexOf(e.methodId());
 
+        String bitcastRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, currentRegisterName, LLVMType.AddressPointer));
+        String objectRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatLoad(objectRegister, LLVMType.AddressPointer, bitcastRegister));
+
         String vtableRegister = registerAllocator.allocateNewTempRegister();
-        appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Address, currentRegisterName, String.format("%d", methodPos), ""));
+        appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Address, objectRegister, String.format("%d", methodPos), ""));
         String vtableEntryRegister = registerAllocator.allocateNewTempRegister();
         appendWithIndent(formatter.formatLoad(vtableEntryRegister, LLVMType.Address, vtableRegister));
         String methodRegister = registerAllocator.allocateNewTempRegister();
@@ -459,15 +463,19 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     }
 
     public void visit(ThisExpr e) {
-        String bitcastRegister = registerAllocator.allocateNewTempRegister();
-        LLVMType.Address.setLength(-1);
-        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, "%this", LLVMType.AddressPointer));
-        String objectRegister = registerAllocator.allocateNewTempRegister();
-        appendWithIndent(formatter.formatLoad(objectRegister, LLVMType.AddressPointer, bitcastRegister));
+//        String bitcastRegister = registerAllocator.allocateNewTempRegister();
+//        appendWithIndent(formatter.formatBitcast(bitcastRegister, LLVMType.Byte, "%this", LLVMType.AddressPointer));
+//        String objectRegister = registerAllocator.allocateNewTempRegister();
+//        appendWithIndent(formatter.formatLoad(objectRegister, LLVMType.AddressPointer, bitcastRegister));
+//
+//        var refType = new RefType();
+//        refType.setId(currentClass.name());
+//        currentRegisterName = objectRegister;
+//        currentRegisterType = refType;
 
         var refType = new RefType();
         refType.setId(currentClass.name());
-        currentRegisterName = objectRegister;
+        currentRegisterName = "%this";
         currentRegisterType = refType;
     }
 
