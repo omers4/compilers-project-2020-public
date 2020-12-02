@@ -276,14 +276,16 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String addressArray = registerAllocator.allocateNewTempRegister();
         appendWithIndent(formatter.formatLoad(addressArray, LLVMType.IntPointer, array));
 
-        // get accessPtrRegister
+        // get index
         assignArrayStatement.index().accept(this);
         String index = getField();
-        String accessPtrRegister = access_array(index, addressArray);
 
         // get rv
         assignArrayStatement.rv().accept(this);
         String rvRegister = getField();
+
+        // get accessPtrRegister
+        String accessPtrRegister = access_array(index, addressArray);
 
         // store rv to address (accessPtrRegister)
         appendWithIndent(formatter.formatStore(LLVMType.Int, rvRegister, accessPtrRegister));
