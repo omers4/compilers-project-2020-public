@@ -407,9 +407,14 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     }
 
+    // load array address (because length in first index) and set currentRegisterName
     @Override
     public void visit(ArrayLengthExpr e) {
         e.arrayExpr().accept(this);
+        String address = getField();
+        String lengthRegister = registerAllocator.allocateNewTempRegister();
+        appendWithIndent(formatter.formatLoad(lengthRegister, LLVMType.Int, address));
+        currentRegisterName = lengthRegister;
     }
 
     @Override
