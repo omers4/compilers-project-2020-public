@@ -272,7 +272,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     public void visit(AssignArrayStatement assignArrayStatement) {
 
         // Load the address of the array
-        String array = registerAllocator.allocateAddressRegister(assignArrayStatement.lv(), assignArrayStatement);
+        String array = loadFieldOrLocalVar(assignArrayStatement, assignArrayStatement.lv());
         String addressArray = registerAllocator.allocateNewTempRegister();
         appendWithIndent(formatter.formatLoad(addressArray, LLVMType.IntPointer, array));
 
@@ -449,37 +449,25 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     /////////////////////Expression/////////////////////
 
-    // set currentRegisterName to the int value itself
+    // set currentRegisterName to the int value
     @Override
     public void visit(IntegerLiteralExpr e) {
         currentRegisterName = Integer.toString(e.num());
         currentRegisterType = new IntAstType();
-        /* TODO: del?
-        // create int register with the value of the integer literal, set currentRegisterName.
-        int value = e.num();
-        String resultRegister = registerAllocator.allocateNewTempRegister();
-        currentRegisterName = resultRegister;
-        builder.append(formatter.formatAdd(resultRegister, LLVMType.Int,"0", Integer.toString(value)));*/
     }
 
-    // create boolean register with the value 1, set currentRegisterName.
+    // set currentRegisterName to 1.
     @Override
     public void visit(TrueExpr e) {
         currentRegisterName = "1";
         currentRegisterType = new BoolAstType();
-        /*String resultRegister = registerAllocator.allocateNewTempRegister();
-        currentRegisterName = resultRegister;
-        appendWithIndent(formatter.formatAnd(resultRegister, LLVMType.Boolean,"1", "1"));*/
     }
 
-    // create boolean register with the value 0, set currentRegisterName.
+    // set currentRegisterName to 0.
     @Override
     public void visit(FalseExpr e) {
         currentRegisterName = "0";
         currentRegisterType = new BoolAstType();
-        /*String resultRegister = registerAllocator.allocateNewTempRegister();
-        currentRegisterName = resultRegister;
-        appendWithIndent(formatter.formatAnd(resultRegister, LLVMType.Boolean,"0", "0"));*/
     }
 
     @Override
