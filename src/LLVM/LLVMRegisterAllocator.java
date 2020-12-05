@@ -19,10 +19,10 @@ public class LLVMRegisterAllocator implements ILLVMRegisterAllocator {
     }
 
     @Override
-    public String allocateAddressRegister(String name, AstNode node) {
+    public String allocateAddressRegister(String name, SymbolType type, AstNode node) {
         SymbolTable symbolTable = _astToSymbolTable.getSymbolTable(node);
         try {
-            SymbolTableItem item = symbolTable.get(name);
+            SymbolTableItem item = symbolTable.get(new SymbolItemKey(name, type));
             if (null == item.getRegisterId()) {
                 item.setRegisterId("%" + name);
             }
