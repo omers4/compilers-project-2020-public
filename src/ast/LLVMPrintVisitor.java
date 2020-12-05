@@ -160,7 +160,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(FormalArg formalArg) {
-        String reg_name = registerAllocator.allocateAddressRegister(formalArg.name(), formalArg);
+        String reg_name = registerAllocator.allocateAddressRegister(formalArg.name(), SymbolType.Var, formalArg);
         formalArg.type().accept(this);
         appendWithIndent(formatter.formatAlloca(reg_name, ASTypeToLLVMType(formalArg.type())));
         appendWithIndent(formatter.formatStore(ASTypeToLLVMType(formalArg.type()), formatter.formatRegisterName(formatter.formatFormalArgName(formalArg.name())), reg_name));
@@ -168,7 +168,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
 
     @Override
     public void visit(VarDecl varDecl) {
-        String reg_name = registerAllocator.allocateAddressRegister(varDecl.name(), varDecl);
+        String reg_name = registerAllocator.allocateAddressRegister(varDecl.name(),SymbolType.Var, varDecl);
         appendWithIndent(formatter.formatAlloca(reg_name, ASTypeToLLVMType(varDecl.type())));
     }
 
@@ -237,9 +237,9 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     }
 
     private String loadFieldOrLocalVar(AstNode context, String name) {
-        String resultRegister = registerAllocator.allocateAddressRegister(name, context);
+        String resultRegister = registerAllocator.allocateAddressRegister(name,SymbolType.Var, context);
         var symbolTableOfStmt = symbolTable.getSymbolTable(context);
-        var symbolTableEntry = symbolTableOfStmt.get(name);
+        var symbolTableEntry = symbolTableOfStmt.get(new SymbolItemKey(name, SymbolType.Var));
         ObjectVTable objectVtable = classInfo.getClassVTable(currentClass.name());
         var field = objectVtable.getFields().get(name);
         if (field != null) {
@@ -262,7 +262,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         var where = loadFieldOrLocalVar(assignStatement, assignStatement.lv());
 
         var symbolTableOfStmt = symbolTable.getSymbolTable(assignStatement);
-        var symbolTableEntry = symbolTableOfStmt.get(assignStatement.lv());
+        var symbolTableEntry = symbolTableOfStmt.get(new SymbolItemKey(assignStatement.lv(), SymbolType.Var));
         appendWithIndent(formatter.formatStore(ASTypeToLLVMType(symbolTableEntry.getType()), valueLocation, where));
     }
 
@@ -480,7 +480,7 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(IdentifierExpr e) {
         var symbolTableOfStmt = symbolTable.getSymbolTable(e);
-        var symbolTableEntry = symbolTableOfStmt.get(e.id());
+        var symbolTableEntry = symbolTableOfStmt.get(new SymbolItemKey(e.id(), SymbolType.Var));
 
         String resultRegister = loadFieldOrLocalVar(e, e.id());
 

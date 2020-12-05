@@ -38,7 +38,7 @@ public class LLVMPreProcessVisitor implements IVisitorWithField<String> {
     @Override
     public void visit(ClassDecl classDecl) {
          SymbolTable symbolTable = astToSymbolTable.getSymbolTable(classDecl);
-         SymbolTableItem classItem = symbolTable.get(classDecl.name());
+         SymbolTableItem classItem = symbolTable.get(new SymbolItemKey(classDecl.name(), SymbolType.Class));
          printClassVTAble(classItem);
     }
 

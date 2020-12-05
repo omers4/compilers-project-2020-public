@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 
 public class SymbolTable {
 
-    private Map<String, SymbolTableItem> _scopeToVars;
+    private Map<SymbolItemKey, SymbolTableItem> _scopeToVars;
     private SymbolTable _parentSymbolTable;
 
     public SymbolTable(SymbolTable parentSymbolTable) {
@@ -14,11 +14,11 @@ public class SymbolTable {
         this._parentSymbolTable = parentSymbolTable;
     }
 
-    public void addSymbol(String id, SymbolTableItem symbol) {
-        _scopeToVars.put(id, symbol);
+    public void addSymbol(SymbolItemKey key, SymbolTableItem symbol) {
+        _scopeToVars.put(key, symbol);
     }
 
-    public SymbolTableItem get(String key) throws NoSuchElementException {
+    public SymbolTableItem get(SymbolItemKey key) throws NoSuchElementException {
         SymbolTableItem value = _scopeToVars.get(key);
         if(value == null && _parentSymbolTable != null)
             return _parentSymbolTable.get(key);

@@ -22,7 +22,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         // Order is important! We first want to add the parent fields
         if (classDecl.superName() != null) {
             SymbolTable parentSymbolTable = _classesSymbolTable.get(classDecl.superName());
-            SymbolTableItem parentClassItem = parentSymbolTable.get(classDecl.superName());
+            SymbolTableItem parentClassItem = parentSymbolTable.get(new SymbolItemKey(classDecl.superName(), SymbolType.Class));
             for (var entry : parentClassItem.getVTable().getFields().entrySet()) {
                 vTable.addField(entry.getKey(),entry.getValue());
             }
@@ -84,7 +84,9 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
         ObjectVTable vTable = createVTable(classDecl);
         SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
-        curContextSymbolTable.addSymbol(classDecl.name(), new SymbolTableItem(classDecl.name(), SymbolType.Class, vTable));
+        SymbolItemKey key = new SymbolItemKey(classDecl.name(), SymbolType.Class);
+        SymbolTableItem val  = new SymbolTableItem(classDecl.name(), vTable);
+        curContextSymbolTable.addSymbol(key, val);
 
         for (var fieldDecl : classDecl.fields()) {
             fieldDecl.accept(this);
@@ -109,7 +111,8 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
         MethodSignature methodSignature = createMethodSignature(methodDecl);
         SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
-        curContextSymbolTable.addSymbol(methodDecl.name(), new SymbolTableItem(methodDecl.name(), SymbolType.Method, methodSignature));
+        SymbolItemKey key = new SymbolItemKey(methodDecl.name(), SymbolType.Method);
+        curContextSymbolTable.addSymbol(key, new SymbolTableItem(methodDecl.name(), methodSignature));
 
         methodDecl.returnType().accept(this);
 
@@ -133,7 +136,8 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
     public void visit(FormalArg formalArg) {
         SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
         _astToSymbolTable.addMapping(formalArg, curContextSymbolTable);
-        curContextSymbolTable.addSymbol(formalArg.name(), new SymbolTableItem(formalArg.name(), SymbolType.Var, formalArg.type()));
+        SymbolItemKey key = new SymbolItemKey(formalArg.name(), SymbolType.Var);
+        curContextSymbolTable.addSymbol(key, new SymbolTableItem(formalArg.name(), formalArg.type()));
         formalArg.type().accept(this);
     }
 
@@ -143,7 +147,8 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         _astToSymbolTable.addMapping(varDecl, _symbolTableHierarchy.peek());
 
         // Add the current variable to the current Symbol Table representing its scope
-        curContextSymbolTable.addSymbol(varDecl.name(), new SymbolTableItem(varDecl.name(), SymbolType.Var, varDecl.type()));
+        SymbolItemKey key = new SymbolItemKey(varDecl.name(), SymbolType.Var);
+        curContextSymbolTable.addSymbol(key, new SymbolTableItem(varDecl.name(), varDecl.type()));
         varDecl.type().accept(this);
     }
 
