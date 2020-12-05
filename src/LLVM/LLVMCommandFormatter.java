@@ -191,7 +191,7 @@ public class LLVMCommandFormatter implements ILLVMCommandFormatter {
 
     @Override
     public String formatPhi(String register, String valueIfLabel1, String label1, String valueIfLabel2, String label2) {
-        return String.format("%s = phi i32 [%s, %s%s], [%s, %s%s]\n",
+        return String.format("%s = phi i1 [%s, %s%s], [%s, %s%s]\n",
                 register,
                 valueIfLabel1,
                 "%",
