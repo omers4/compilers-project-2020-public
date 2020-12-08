@@ -240,11 +240,15 @@ public class LLVMPrintVisitor implements IVisitorWithField<String> {
         String resultRegister = registerAllocator.allocateAddressRegister(name,SymbolType.Var, context);
         var symbolTableOfStmt = symbolTable.getSymbolTable(context);
         var symbolTableEntry = symbolTableOfStmt.get(new SymbolItemKey(name, SymbolType.Var));
+        if (symbolTableEntry.getKind() != SymbolType.Field) {
+            return resultRegister;
+        }
+
+
         ObjectVTable objectVtable = classInfo.getClassVTable(currentClass.name());
         var field = objectVtable.getFields().get(name);
         if (field != null) {
             String vtableRegister = registerAllocator.allocateNewTempRegister();
-            // TODO put the right field offset
             int fieldOffset = objectVtable.getFieldIndex(name);
             appendWithIndent(formatter.formatGetElementPtr(vtableRegister, LLVMType.Byte, "%this", String.format("%d", fieldOffset), ""));
             String bitcastRegister = registerAllocator.allocateNewTempRegister();
