@@ -7,11 +7,13 @@ public class SymbolTableItem {
     private AstType _type;
     private ObjectVTable _vTable;
     private MethodSignature _methodSignature;
+    private SymbolType _subKind;
 
-    public SymbolTableItem(String id, AstType type) {
+    public SymbolTableItem(String id, AstType type, SymbolType subKind) {
         this._id = id;
         _registerAddr = null;
         _type = type;
+        _subKind = subKind;
     }
 
     public SymbolTableItem(String id, ObjectVTable vTable) {
@@ -32,6 +34,10 @@ public class SymbolTableItem {
 
     public AstType getType() {
         return _type;
+    }
+
+    public SymbolType getKind() {
+        return _subKind;
     }
 
     public String getId() { return _id;}
