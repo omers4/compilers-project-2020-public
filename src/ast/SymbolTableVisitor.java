@@ -7,6 +7,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
     private Stack<SymbolTable> _symbolTableHierarchy;
     private Map<String,SymbolTable> _classesSymbolTable;
     private AstToSymbolTable _astToSymbolTable;
+    private SymbolType _type = SymbolType.Method_Var;
 
     public SymbolTableVisitor() {
         _classesSymbolTable = new HashMap<>();
@@ -88,9 +89,12 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         SymbolTableItem val  = new SymbolTableItem(classDecl.name(), vTable);
         curContextSymbolTable.addSymbol(key, val);
 
+        _type = SymbolType.Field;
         for (var fieldDecl : classDecl.fields()) {
             fieldDecl.accept(this);
         }
+
+        _type = SymbolType.Method_Var;
         for (var methodDecl : classDecl.methoddecls()) {
             methodDecl.accept(this);
         }
@@ -137,7 +141,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
         _astToSymbolTable.addMapping(formalArg, curContextSymbolTable);
         SymbolItemKey key = new SymbolItemKey(formalArg.name(), SymbolType.Var);
-        curContextSymbolTable.addSymbol(key, new SymbolTableItem(formalArg.name(), formalArg.type()));
+        curContextSymbolTable.addSymbol(key, new SymbolTableItem(formalArg.name(), formalArg.type(), SymbolType.Method_Var));
         formalArg.type().accept(this);
     }
 
@@ -148,7 +152,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
         // Add the current variable to the current Symbol Table representing its scope
         SymbolItemKey key = new SymbolItemKey(varDecl.name(), SymbolType.Var);
-        curContextSymbolTable.addSymbol(key, new SymbolTableItem(varDecl.name(), varDecl.type()));
+        curContextSymbolTable.addSymbol(key, new SymbolTableItem(varDecl.name(), varDecl.type(), _type));
         varDecl.type().accept(this);
     }
 

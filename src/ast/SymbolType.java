@@ -2,8 +2,8 @@ package ast;
 
 public enum SymbolType {
     Field,
+    Method_Var,
     Method,
-    Decl,
     Var,
     Class
 }
