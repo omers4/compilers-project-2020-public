@@ -1,8 +1,8 @@
 import LLVM.ILLVMCommandFormatter;
 import LLVM.LLVMCommandFormatter;
 import LLVM.LLVMRegisterAllocator;
+import Semantics.ArraySemanticsVisitor;
 import Semantics.ClassSemanticsVisitor;
-import Semantics.ISemanticsVisitor;
 import Semantics.InvalidSemanticsException;
 import ast.*;
 import ast.LLVMPreProcessVisitor;
@@ -42,18 +42,29 @@ public class Main {
 
                     // Was not sure that using String will work because it is immutable
                     StringBuilder outputMessage = new StringBuilder("OK\n");
-                    Collection<ISemanticsVisitor> semanticCheckers = new ArrayList<>();
-                    semanticCheckers.add(new ClassSemanticsVisitor());
-                    // Add more visitors
+                    Collection<ClassSemanticsVisitor> semanticCheckers = new ArrayList<>();
 
-                    for(ISemanticsVisitor visitor : semanticCheckers) {
-                        try {
+                    try {
+                        var hierarchy = new ClassHierarchyForest(prog);
+
+                        IVisitorWithField<IAstToSymbolTable> symbolTableVisitor = new SymbolTableVisitor<>();
+                        symbolTableVisitor.visit(prog);
+                        var astToSymbolTable = symbolTableVisitor.getField();
+
+                        semanticCheckers.add(new ClassSemanticsVisitor(astToSymbolTable));
+                        semanticCheckers.add(new ArraySemanticsVisitor(astToSymbolTable));
+                        // Add more visitors
+
+                        for(ClassSemanticsVisitor visitor : semanticCheckers) {
                             visitor.visit(prog);
+                            if (!visitor.getResult()) {
+                                throw new InvalidSemanticsException();
+                            }
+
                         }
-                        catch (InvalidSemanticsException e) {
-                            outputMessage = new StringBuilder("ERROR\n");
-                            break;
-                        }
+                    }
+                    catch (InvalidSemanticsException e) {
+                        outputMessage = new StringBuilder("ERROR\n");
                     }
 
                     outFile.write(outputMessage.toString());
