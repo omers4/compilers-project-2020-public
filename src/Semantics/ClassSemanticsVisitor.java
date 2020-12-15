@@ -4,7 +4,7 @@ import ast.*;
 
 public class ClassSemanticsVisitor implements Visitor {
     protected IAstToSymbolTable symbolTable;
-    protected Class lastType;
+    protected AstType lastType;
     boolean valid = true;
 
     public boolean getResult() {
@@ -153,17 +153,17 @@ public class ClassSemanticsVisitor implements Visitor {
 
     @Override
     public void visit(IntegerLiteralExpr e) {
-        lastType = IntAstType.class;
+        lastType = new IntAstType();
     }
 
     @Override
     public void visit(TrueExpr e) {
-        lastType = BoolAstType.class;
+        lastType = new BoolAstType();
     }
 
     @Override
     public void visit(FalseExpr e) {
-        lastType = BoolAstType.class;
+        lastType = new BoolAstType();
     }
 
     @Override

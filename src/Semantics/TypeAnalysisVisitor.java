@@ -2,19 +2,20 @@ package Semantics;
 
 import ast.*;
 
+import java.sql.Ref;
 import java.util.NoSuchElementException;
 
 public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
-    private void visitBinaryExpr(BinaryExpr e, Class requiredType) {
+    private void visitBinaryExpr(BinaryExpr e, AstType requiredType) {
         lastType = null;
         e.e1().accept(this);
-        if (lastType != requiredType) {
+        if (lastType.getClass() != requiredType.getClass()) {
             valid = false;
             return;
         }
 
         e.e2().accept(this);
-        if (lastType != requiredType) {
+        if (lastType.getClass() != requiredType.getClass()) {
             valid = false;
             return;
         }
@@ -28,29 +29,29 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
     @Override
     public void visit(AndExpr e) {
-        visitBinaryExpr(e, BoolAstType.class);
+        visitBinaryExpr(e, new BoolAstType());
     }
 
     @Override
     public void visit(LtExpr e) {
-        visitBinaryExpr(e, IntAstType.class);
+        visitBinaryExpr(e, new IntAstType());
         ;
     }
 
     @Override
     public void visit(AddExpr e) {
-        visitBinaryExpr(e, IntAstType.class);
+        visitBinaryExpr(e, new IntAstType());
         ;
     }
 
     @Override
     public void visit(SubtractExpr e) {
-        visitBinaryExpr(e, IntAstType.class);
+        visitBinaryExpr(e, new IntAstType());
     }
 
     @Override
     public void visit(MultExpr e) {
-        visitBinaryExpr(e, IntAstType.class);
+        visitBinaryExpr(e, new IntAstType());
     }
 
     @Override
@@ -65,14 +66,14 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         }
 
         assignArrayStatement.index().accept(this);
-        if (lastType != IntAstType.class) {
+        if (!(lastType instanceof IntAstType)) {
             valid = false;
             return;
         }
 
         lastType = null;
         assignArrayStatement.rv().accept(this);
-        if (lastType != IntAstType.class) {
+        if (!(lastType instanceof IntAstType)) {
             valid = false;
         }
 
@@ -81,30 +82,30 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     @Override
     public void visit(ArrayAccessExpr e) {
         e.arrayExpr().accept(this);
-        if (lastType != IntArrayAstType.class) {
+        if (!(lastType instanceof IntArrayAstType)) {
             valid = false;
             return;
         }
 
         lastType = null;
         e.indexExpr().accept(this);
-        if (lastType != IntAstType.class) {
+        if (!(lastType instanceof IntAstType)) {
             valid = false;
             return;
         }
 
-        lastType = IntAstType.class;
+        lastType = new IntAstType();
     }
 
     @Override
     public void visit(NewIntArrayExpr e) {
         e.lengthExpr().accept(this);
-        if (!(lastType == IntAstType.class)) {
+        if (!(lastType instanceof IntAstType)) {
             valid = false;
             lastType = null;
             return;
         }
-        lastType = IntArrayAstType.class;
+        lastType = new IntArrayAstType();
     }
 
     @Override
@@ -113,7 +114,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
         try {
             var symbolTableEntry = symbolTableOfStmt.get(new SymbolItemKey(e.id(), SymbolType.Var));
-            lastType = symbolTableEntry.getType().getClass();
+            lastType = symbolTableEntry.getType();
         } catch (NoSuchElementException exc) {
             valid = false; // expr not an int array
             lastType = null;
@@ -124,12 +125,12 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     public void visit(ArrayLengthExpr e) {
         e.arrayExpr().accept(this);
 
-        if (!(lastType == IntArrayAstType.class)) {
+        if (!(lastType instanceof IntArrayAstType)) {
             valid = false;
             lastType = null;
         }
 
-        lastType = IntAstType.class;
+        lastType = new IntAstType();
 
     }
 
@@ -137,14 +138,14 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     public void visit(IfStatement ifStatement) {
         lastType = null;
         ifStatement.cond().accept(this);
-        if (lastType != BoolAstType.class) {
+        if (!(lastType instanceof BoolAstType)) {
             valid = false;
             return;
         }
 
         lastType = null;
         ifStatement.elsecase().accept(this);
-        if (lastType != BoolAstType.class) {
+        if (!(lastType instanceof BoolAstType)) {
             valid = false;
         }
 
@@ -154,16 +155,46 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     public void visit(WhileStatement whileStatement) {
         lastType = null;
         whileStatement.cond().accept(this);
-        if (lastType != BoolAstType.class) {
+        if (!(lastType instanceof BoolAstType)) {
             valid = false;
         }
     }
 
+    @Override
     public void visit(SysoutStatement sysoutStatement) {
         lastType = null;
         sysoutStatement.arg().accept(this);
-        if (!(lastType == IntAstType.class)) {
+        if (!(lastType instanceof IntAstType)) {
             valid = false;
         }
+    }
+
+    public void visit(AssignStatement assignStatement) {
+        var symbolTableOfStmt = symbolTable.getSymbolTable(assignStatement);
+
+        // First we need to get the type of the lv
+        try {
+            var symbolTableEntry = symbolTableOfStmt.get(new SymbolItemKey(assignStatement.lv(), SymbolType.Var));
+            var staticType = symbolTableEntry.getType();
+            // if we are here we found the lv and it's type.]
+
+
+            assignStatement.rv().accept(this);
+            if (lastType.getClass() != staticType.getClass()) {
+                valid = false;
+                return;
+            }
+
+            // if it's a ref, we do an extra validation, that the classes inherit each other. otherwise it's not valid
+            if (staticType.getClass() == RefType.class) {
+                // TODO if it's a ref, to an extra validation, that the classes inherit each other
+                // Maybe we will need to send the whole class together with the field.. otherwise we don't have the field we need.d
+            }
+
+        } catch (NoSuchElementException exc) {
+            valid = false; // expr not an int array
+            return;
+        }
+
     }
 }
