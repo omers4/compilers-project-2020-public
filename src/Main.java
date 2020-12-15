@@ -1,7 +1,7 @@
 import LLVM.ILLVMCommandFormatter;
 import LLVM.LLVMCommandFormatter;
 import LLVM.LLVMRegisterAllocator;
-import Semantics.ArraySemanticsVisitor;
+import Semantics.TypeAnalysisVisitor;
 import Semantics.ClassSemanticsVisitor;
 import Semantics.InvalidSemanticsException;
 import ast.*;
@@ -52,7 +52,7 @@ public class Main {
                         var astToSymbolTable = symbolTableVisitor.getField();
 
                         semanticCheckers.add(new ClassSemanticsVisitor(astToSymbolTable));
-                        semanticCheckers.add(new ArraySemanticsVisitor(astToSymbolTable));
+                        semanticCheckers.add(new TypeAnalysisVisitor(astToSymbolTable));
                         // Add more visitors
 
                         for(ClassSemanticsVisitor visitor : semanticCheckers) {
