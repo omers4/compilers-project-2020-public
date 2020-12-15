@@ -51,7 +51,7 @@ public class Main {
                         symbolTableVisitor.visit(prog);
                         var astToSymbolTable = symbolTableVisitor.getField();
 
-                        semanticCheckers.add(new TypeAnalysisVisitor(astToSymbolTable));
+                        semanticCheckers.add(new TypeAnalysisVisitor(astToSymbolTable, hierarchy));
                         // Add more visitors
 
                         for(ClassSemanticsVisitor visitor : semanticCheckers) {

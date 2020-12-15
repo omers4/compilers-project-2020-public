@@ -3,6 +3,7 @@ package Semantics;
 import ast.*;
 
 public class ClassSemanticsVisitor implements Visitor {
+    protected ClassHierarchyForest hierarchy;
     protected IAstToSymbolTable symbolTable;
     protected AstType lastType;
     boolean valid = true;
@@ -11,8 +12,9 @@ public class ClassSemanticsVisitor implements Visitor {
         return valid;
     }
     
-    public ClassSemanticsVisitor(IAstToSymbolTable symbolTable) {
+    public ClassSemanticsVisitor(IAstToSymbolTable symbolTable, ClassHierarchyForest hierarchy) {
         this.symbolTable = symbolTable;
+        this.hierarchy = hierarchy;
     }
 
     private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {

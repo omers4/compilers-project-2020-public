@@ -117,4 +117,19 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
         }
         return null;
     }
+
+    public boolean isParent(String parent, String child) {
+        var cltree = getClassTreeByNameFromForest(this.trees, child);
+        if (parent.equals(child)) {
+            return true;
+        }
+
+        while (cltree.getParent() != null) {
+            cltree = cltree.getParent();
+            if (cltree.getClassDecl().name().equals(parent)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -1,8 +1,6 @@
 package Semantics;
 
 import ast.*;
-
-import java.sql.Ref;
 import java.util.NoSuchElementException;
 
 public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
@@ -23,8 +21,8 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         lastType = requiredType;
     }
 
-    public TypeAnalysisVisitor(IAstToSymbolTable symbolTable) {
-        super(symbolTable);
+    public TypeAnalysisVisitor(IAstToSymbolTable symbolTable, ClassHierarchyForest hierarchy) {
+        super(symbolTable, hierarchy);
     }
 
     @Override
@@ -60,7 +58,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
         var symbolTableOfStmt = symbolTable.getSymbolTable(assignArrayStatement);
         var symbolTableEntry = symbolTableOfStmt.get(new SymbolItemKey(assignArrayStatement.lv(), SymbolType.Var));
-        if (symbolTableEntry == null || symbolTableEntry.getType().getClass() != IntArrayAstType.class) {
+        if (symbolTableEntry == null || !(symbolTableEntry.getType() instanceof IntArrayAstType)) {
             valid = false; // variable not found
             return;
         }
@@ -186,9 +184,18 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
             }
 
             // if it's a ref, we do an extra validation, that the classes inherit each other. otherwise it's not valid
-            if (staticType.getClass() == RefType.class) {
-                // TODO if it's a ref, to an extra validation, that the classes inherit each other
-                // Maybe we will need to send the whole class together with the field.. otherwise we don't have the field we need.d
+            if (staticType instanceof RefType) {
+                RefType sourceRef = (RefType) staticType;
+                RefType destRef = (RefType) lastType;
+                // A a = new B(); is allowed
+
+                // Just to verify they exist
+                symbolTableOfStmt.get(new SymbolItemKey(sourceRef.id(), SymbolType.Class));
+                symbolTableOfStmt.get(new SymbolItemKey(destRef.id(), SymbolType.Class));
+
+                if (!hierarchy.isParent(sourceRef.id(), destRef.id())) {
+                    valid = false;
+                }
             }
 
         } catch (NoSuchElementException exc) {
