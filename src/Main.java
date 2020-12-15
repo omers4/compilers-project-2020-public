@@ -1,10 +1,15 @@
 import LLVM.ILLVMCommandFormatter;
 import LLVM.LLVMCommandFormatter;
 import LLVM.LLVMRegisterAllocator;
+import Semantics.ClassSemanticsVisitor;
+import Semantics.ISemanticsVisitor;
+import Semantics.InvalidSemanticsException;
 import ast.*;
 import ast.LLVMPreProcessVisitor;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class Main {
     public static void main(String[] args) {
@@ -34,7 +39,24 @@ public class Main {
                     PrintProgram(prog, outFile);
 
                 } else if (action.equals("semantic")) {
-                    throw new UnsupportedOperationException("TODO - Ex. 3");
+
+                    // Was not sure that using String will work because it is immutable
+                    StringBuilder outputMessage = new StringBuilder("OK\n");
+                    Collection<ISemanticsVisitor> semanticCheckers = new ArrayList<>();
+                    semanticCheckers.add(new ClassSemanticsVisitor());
+                    // Add more visitors
+
+                    for(ISemanticsVisitor visitor : semanticCheckers) {
+                        try {
+                            visitor.visit(prog);
+                        }
+                        catch (InvalidSemanticsException e) {
+                            outputMessage = new StringBuilder("ERROR\n");
+                            break;
+                        }
+                    }
+
+                    outFile.write(outputMessage.toString());
 
                 } else if (action.equals("compile")) {
                     var hierarchy = new ClassHierarchyForest(prog);
