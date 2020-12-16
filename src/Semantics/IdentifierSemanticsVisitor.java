@@ -6,12 +6,12 @@ import java.util.ArrayList;
 
 public class IdentifierSemanticsVisitor extends ClassSemanticsVisitor{
 
-    private ArrayList<String> classes_names;
+    private ArrayList<String> classes_names = new ArrayList<>();
     private boolean from_owner;
 
     public IdentifierSemanticsVisitor(IAstToSymbolTable symbolTable, ClassHierarchyForest hierarchy) {
         super(symbolTable, hierarchy);
-        classes_names = (ArrayList<String>) hierarchy.getTreesNames();
+        hierarchy.getTreesNames(classes_names);
         from_owner = false;
     }
 
@@ -19,7 +19,7 @@ public class IdentifierSemanticsVisitor extends ClassSemanticsVisitor{
 
     private void type_in_classes(String type_declaration){
         for(var class_name: this.classes_names){
-            if(type_declaration == class_name)
+            if(type_declaration.equals(class_name))
                 return;
         }
         valid = false;
@@ -72,6 +72,12 @@ public class IdentifierSemanticsVisitor extends ClassSemanticsVisitor{
                 valid = false;
             }
         }
+    }
+
+    @Override
+    public void visit(AssignStatement assignStatement) {
+        assignStatement.rv().accept(this);
+        // TODO: lv check
     }
 
 }
