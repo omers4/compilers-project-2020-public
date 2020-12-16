@@ -7,6 +7,7 @@ public class ClassSemanticsVisitor implements Visitor {
     protected IAstToSymbolTable symbolTable;
     protected AstType lastType;
     boolean valid = true;
+    private String lastStaticType = "";
 
     public boolean getResult() {
         return valid;

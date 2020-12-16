@@ -125,7 +125,7 @@ public class ClassAndMethodsSemanticsVisitor extends ClassSemanticsVisitor {
         }
         methodDecl.ret().accept(this);
     }
-    
+
     @Override
     public void visit(MethodCallExpr e) {
         e.ownerExpr().accept(this);
