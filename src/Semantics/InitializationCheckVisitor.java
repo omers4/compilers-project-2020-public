@@ -14,15 +14,15 @@ enum Scope {
 
 public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
 
-    Set<String> localVars;
-    Set<String> InitializedVars;
+    Set<String> localVars; // all local vars names
+    Set<String> InitializedVars; // local vars which initialized
 
-    Scope scope = Scope.Method;
+    Scope scope = Scope.Method; // needs to know scope in order to assign to correct vars set
     // Inside a while, the initializations don't count for uses after the loop, because we can't be sure that the loop executes at all.
 
     // add intersection of these sets to InitializedVars
-    Set<String> ThenInitializedVars;
-    Set<String> ElseInitializedVars;
+    Set<String> ThenInitializedVars; // local vars which initialized in then case
+    Set<String> ElseInitializedVars; // local vars which initialized in else case
 
     public InitializationCheckVisitor(IAstToSymbolTable symbolTable, ClassHierarchyForest hierarchy) {
         super(symbolTable, hierarchy);
@@ -53,25 +53,28 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
     @Override
     public void visit(AssignStatement assignStatement) {
         assignStatement.rv().accept(this);
+        // assume type analysis
         String lv = assignStatement.lv();
-        switch(scope){
-            case Method:
-                localVars.add(lv);
-                break;
-            case Than:
-                ThenInitializedVars.add(lv);
-                break;
-            case Else:
-                ElseInitializedVars.add(lv);
-                break;
-            case While:
-                break;
+        if(localVars.contains(lv)){
+            switch(scope){
+                case Method:
+                    InitializedVars.add(lv);
+                    break;
+                case Than:
+                    ThenInitializedVars.add(lv);
+                    break;
+                case Else:
+                    ElseInitializedVars.add(lv);
+                    break;
+                case While:
+                    break;
+            }
         }
     }
 
     @Override
     public void visit(IdentifierExpr e) {
-        if(!(InitializedVars.contains(e.id()))){
+        if( localVars.contains(e.id()) && !( InitializedVars.contains(e.id()) )){
             valid = false;
         }
     }

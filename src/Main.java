@@ -1,9 +1,7 @@
 import LLVM.ILLVMCommandFormatter;
 import LLVM.LLVMCommandFormatter;
 import LLVM.LLVMRegisterAllocator;
-import Semantics.TypeAnalysisVisitor;
-import Semantics.ClassSemanticsVisitor;
-import Semantics.InvalidSemanticsException;
+import Semantics.*;
 import ast.*;
 import ast.LLVMPreProcessVisitor;
 
@@ -53,6 +51,8 @@ public class Main {
 
                         semanticCheckers.add(new TypeAnalysisVisitor(astToSymbolTable, hierarchy));
                         // Add more visitors
+                        semanticCheckers.add(new IdentifierSemanticsVisitor(astToSymbolTable, hierarchy));
+                        semanticCheckers.add(new InitializationCheckVisitor(astToSymbolTable, hierarchy));
 
                         for(ClassSemanticsVisitor visitor : semanticCheckers) {
                             visitor.visit(prog);
