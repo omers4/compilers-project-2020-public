@@ -1,14 +1,14 @@
 package ast;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import Semantics.InvalidSemanticsException;
+
+import java.util.*;
 
 public class ClassHierarchyForest implements IClassHierarchyForest {
     private Program program;
     private ASTUtils astUtils;
     private ArrayList<ClassTree> trees;
 
-    public ClassHierarchyForest(Program program) {
+    public ClassHierarchyForest(Program program) throws InvalidSemanticsException {
         this.program = program;
         this.astUtils = new ASTUtils(program);
         trees = new ArrayList<ClassTree>();
@@ -39,11 +39,16 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
      * The target of this method is to initialize the forest by going over all
      * classes and link them according to the inheritance.
      * */
-    private void initForest() {
+    private void initForest() throws InvalidSemanticsException {
         var tempForest = new LinkedList<ClassTree>();
+        List<String> classNames = new ArrayList<>();
 
         for (ClassDecl classDecl : program.classDecls()) {
+            if (classNames.contains(classDecl.name())) {
+                throw new InvalidSemanticsException(); // Refrain from duplicated class names
+            }
             tempForest.add(new ClassTree(classDecl));
+            classNames.add(classDecl.name());
         }
 
         ClassTree tree;
@@ -51,6 +56,11 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
             tree = tempForest.pop();
             String superName = tree.getClassDecl().superName();
             if (superName != null) {
+                if (!classNames.contains(superName) || superName.equals(tree.getClassDecl().name()) ||
+                        classNames.indexOf(tree.getClassDecl().name()) < classNames.indexOf(superName)) {
+                    throw new InvalidSemanticsException(); // Cyclic, bad or self inheritance
+                }
+
                 ClassTree parentTree = getClassTreeByNameFromForest(tempForest, superName);
                 if (parentTree != null) {
                     // Set the tree as parent to the current tree
@@ -106,5 +116,20 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
                 return find;
         }
         return null;
+    }
+
+    public boolean isParent(String parent, String child) {
+        var cltree = getClassTreeByNameFromForest(this.trees, child);
+        if (parent.equals(child)) {
+            return true;
+        }
+
+        while (cltree.getParent() != null) {
+            cltree = cltree.getParent();
+            if (cltree.getClassDecl().name().equals(parent)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

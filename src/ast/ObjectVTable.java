@@ -30,11 +30,6 @@ public class ObjectVTable {
         methods = new LinkedHashMap<>();
     }
 
-    public int getMethodIndex(String method) {
-        MethodSignature methodSignature = methods.get(method);
-return 1;
-    }
-
     public int getFieldIndex(String field) {
         int size = 0;
         for (var entry : fields.entrySet()) {
