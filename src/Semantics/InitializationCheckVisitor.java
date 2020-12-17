@@ -159,6 +159,40 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
     public void visit(IfStatement ifStatement) {
         Scope before = scope;
 
+        Set<String> thanBefore = null;
+        Set<String> elseBefore = null;
+
+        switch(before){
+            case Method:
+                ThenInitializedVars = new HashSet<>();
+                ElseInitializedVars = new HashSet<>();
+                ThenInitializedVars.addAll(InitializedVars);
+                ElseInitializedVars.addAll(InitializedVars);
+                break;
+            case Than:
+                thanBefore = new HashSet<>();
+                elseBefore = new HashSet<>();
+                thanBefore.addAll(ThenInitializedVars);
+                elseBefore.addAll(ElseInitializedVars);
+                ThenInitializedVars = new HashSet<>(thanBefore);
+                ElseInitializedVars = new HashSet<>(thanBefore);
+                break;
+            case Else:
+                thanBefore = new HashSet<>();
+                elseBefore = new HashSet<>();
+                thanBefore.addAll(ThenInitializedVars);
+                elseBefore.addAll(ElseInitializedVars);
+                ThenInitializedVars = new HashSet<>(elseBefore);
+                ElseInitializedVars = new HashSet<>(elseBefore);
+                break;
+            case While:
+                ThenInitializedVars = new HashSet<>();
+                ElseInitializedVars = new HashSet<>();
+                ThenInitializedVars.addAll(WhileInitializedVars);
+                ElseInitializedVars.addAll(WhileInitializedVars);
+                break;
+        }
+
         ifStatement.cond().accept(this);
 
         scope = Scope.Than;
@@ -169,7 +203,29 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
 
         Set<String> intersectSet = new HashSet<>(ThenInitializedVars);
         intersectSet.retainAll(ElseInitializedVars);
-        InitializedVars.addAll(intersectSet);
+
+        switch(before){
+            case Method:
+                InitializedVars.addAll(intersectSet);
+                break;
+            case Than:
+                ThenInitializedVars = new HashSet<>();
+                ElseInitializedVars = new HashSet<>();
+                ThenInitializedVars.addAll(thanBefore);
+                ThenInitializedVars.addAll(intersectSet);
+                ElseInitializedVars.addAll(elseBefore);
+                break;
+            case Else:
+                ThenInitializedVars = new HashSet<>();
+                ElseInitializedVars = new HashSet<>();
+                ThenInitializedVars.addAll(thanBefore);
+                ElseInitializedVars.addAll(elseBefore);
+                ElseInitializedVars.addAll(intersectSet);
+                break;
+            case While:
+                WhileInitializedVars.addAll(intersectSet);
+                break;
+        }
 
         scope = before;
     }
