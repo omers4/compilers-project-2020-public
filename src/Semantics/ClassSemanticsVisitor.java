@@ -7,7 +7,6 @@ public class ClassSemanticsVisitor implements Visitor {
     protected IAstToSymbolTable symbolTable;
     protected AstType lastType;
     boolean valid = true;
-    private String lastStaticType = "";
 
     public boolean getResult() {
         return valid;
@@ -33,7 +32,6 @@ public class ClassSemanticsVisitor implements Visitor {
 
     @Override
     public void visit(ClassDecl classDecl) {
-
         for (var fieldDecl : classDecl.fields()) {
             fieldDecl.accept(this);
         }

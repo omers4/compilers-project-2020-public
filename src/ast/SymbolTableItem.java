@@ -9,6 +9,7 @@ public class SymbolTableItem {
     private MethodSignature _methodSignature;
     private SymbolType _subKind;
 
+
     public SymbolTableItem(String id, AstType type, SymbolType subKind) {
         this._id = id;
         _registerAddr = null;

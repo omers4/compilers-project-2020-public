@@ -8,16 +8,18 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
     private Map<String,SymbolTable> _classesSymbolTable;
     private AstToSymbolTable _astToSymbolTable;
     private SymbolType _type = SymbolType.Method_Var;
+    private Map<String,ObjectVTable> _classInfo;
 
     public SymbolTableVisitor() {
         _classesSymbolTable = new HashMap<>();
         _astToSymbolTable = new AstToSymbolTable();
         _symbolTableHierarchy = new Stack<>();
+        _classInfo = new HashMap<>();
         _symbolTableHierarchy.push(null);
     }
 
     private ObjectVTable createVTable(ClassDecl classDecl) {
-        ObjectVTable vTable = new ObjectVTable(classDecl.name());
+        ObjectVTable vTable = new ObjectVTable(classDecl.name(),classDecl.superName());
 
         // If parent exists we want it's fields reside first in VTable
         // Order is important! We first want to add the parent fields
@@ -68,6 +70,12 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         for (ClassDecl classdecl : program.classDecls()) {
             classdecl.accept(this);
         }
+
+        for(var nameAndClass : _classInfo.entrySet()) {
+            var key = new SymbolItemKey(nameAndClass.getKey(), SymbolType.Class);
+            var val = new SymbolTableItem(nameAndClass.getKey(), nameAndClass.getValue());
+            _symbolTableHierarchy.peek().addSymbol(key,val);
+        }
     }
 
     @Override
@@ -84,10 +92,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         _astToSymbolTable.addMapping(classDecl, _symbolTableHierarchy.peek());
 
         ObjectVTable vTable = createVTable(classDecl);
-        SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
-        SymbolItemKey key = new SymbolItemKey(classDecl.name(), SymbolType.Class);
-        SymbolTableItem val  = new SymbolTableItem(classDecl.name(), vTable);
-        curContextSymbolTable.addSymbol(key, val);
+        _classInfo.put(classDecl.name(),vTable);
 
         _type = SymbolType.Field;
         for (var fieldDecl : classDecl.fields()) {
