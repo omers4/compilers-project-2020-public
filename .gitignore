@@ -19,3 +19,5 @@ mjavac.jar
 examples/ast/Factorial_new.ll
 
 out.ll
+
+examples/ex3/yotam/out.txt

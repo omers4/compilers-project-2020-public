@@ -77,7 +77,15 @@ public class IdentifierSemanticsVisitor extends ClassSemanticsVisitor{
     @Override
     public void visit(AssignStatement assignStatement) {
         assignStatement.rv().accept(this);
-        // TODO: lv check
+        // looking for lv as var.
+        try{
+            var symbolTableOfStmt = symbolTable.getSymbolTable(assignStatement);
+            var symbolTableEntry = symbolTableOfStmt.get(new SymbolItemKey(assignStatement.lv(), SymbolType.Var));
+        }
+        catch (Exception exception){
+            valid = false;
+            return;
+        }
     }
 
 }

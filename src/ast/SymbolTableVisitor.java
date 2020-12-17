@@ -24,8 +24,10 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         // If parent exists we want it's fields reside first in VTable
         // Order is important! We first want to add the parent fields
         if (classDecl.superName() != null) {
-            SymbolTable parentSymbolTable = _classesSymbolTable.get(classDecl.superName());
-            SymbolTableItem parentClassItem = parentSymbolTable.get(new SymbolItemKey(classDecl.superName(), SymbolType.Class));
+
+            //SymbolTable parentSymbolTable = _classesSymbolTable.get(classDecl.superName());
+            //SymbolTableItem parentClassItem = parentSymbolTable.get(new SymbolItemKey(classDecl.superName(), SymbolType.Class));
+            SymbolTableItem parentClassItem = _symbolTableHierarchy.peek().get(new SymbolItemKey(classDecl.superName(), SymbolType.Class));
             for (var entry : parentClassItem.getVTable().getFields().entrySet()) {
                 vTable.addField(entry.getKey(),entry.getValue());
             }
@@ -68,13 +70,10 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         program.mainClass().accept(this);
 
         for (ClassDecl classdecl : program.classDecls()) {
-            classdecl.accept(this);
-        }
-
-        for(var nameAndClass : _classInfo.entrySet()) {
-            var key = new SymbolItemKey(nameAndClass.getKey(), SymbolType.Class);
-            var val = new SymbolTableItem(nameAndClass.getKey(), nameAndClass.getValue());
+            var key = new SymbolItemKey(classdecl.name(), SymbolType.Class);
+            var val = new SymbolTableItem(classdecl.name(), createVTable(classdecl));
             _symbolTableHierarchy.peek().addSymbol(key,val);
+            classdecl.accept(this);
         }
     }
 
@@ -90,9 +89,6 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         // Order matters. We first connect the Ast to a new SymbolTable and then we add it to the mapping using peek
         _symbolTableHierarchy.push((new SymbolTable(parentSymbolTable)));
         _astToSymbolTable.addMapping(classDecl, _symbolTableHierarchy.peek());
-
-        ObjectVTable vTable = createVTable(classDecl);
-        _classInfo.put(classDecl.name(),vTable);
 
         _type = SymbolType.Field;
         for (var fieldDecl : classDecl.fields()) {
