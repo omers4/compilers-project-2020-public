@@ -18,9 +18,7 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
     Set<String> InitializedVars; // local vars which initialized
 
     Scope scope = Scope.Method; // needs to know scope in order to assign to correct vars set
-    // Inside a while, the initializations don't count for uses after the loop, because we can't be sure that the loop executes at all.
 
-    // add intersection of these sets to InitializedVars
     Set<String> ThenInitializedVars; // local vars which initialized in then case
     Set<String> ElseInitializedVars; // local vars which initialized in else case
 
@@ -28,6 +26,9 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
 
     public InitializationCheckVisitor(IAstToSymbolTable symbolTable, ClassHierarchyForest hierarchy) {
         super(symbolTable, hierarchy);
+        ThenInitializedVars = new HashSet<>();
+        ElseInitializedVars = new HashSet<>();
+        WhileInitializedVars = new HashSet<>();
     }
 
 
@@ -119,36 +120,42 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
 
     @Override
     public void visit(WhileStatement whileStatement) {
-        Scope before = scope;
-        Set<String> whileBefore = null;
 
+        // visit cond, previous scope setting
+        whileStatement.cond().accept(this);
+
+        // save before scope + sets state
+        Scope before = scope;
+        Set<String> beforeInitialized = new HashSet<>(InitializedVars);
+        Set<String> beforeThan = new HashSet<>(ThenInitializedVars);
+        Set<String> beforeElse = new HashSet<>(ElseInitializedVars);
+        Set<String> beforeWhile = new HashSet<>(WhileInitializedVars);
+
+        // add initialized vars from previous scope to current while scope
         switch(before){
             case Method:
-                WhileInitializedVars = new HashSet<>();
-                WhileInitializedVars.addAll(InitializedVars);
+                WhileInitializedVars = new HashSet<>(beforeInitialized);
                 break;
             case Than:
-                WhileInitializedVars = new HashSet<>();
-                WhileInitializedVars.addAll(ThenInitializedVars);
+                WhileInitializedVars = new HashSet<>(beforeThan);
                 break;
             case Else:
-                WhileInitializedVars = new HashSet<>();
-                WhileInitializedVars.addAll(ElseInitializedVars);
+                WhileInitializedVars = new HashSet<>(beforeElse);
                 break;
             case While:
-                whileBefore = new HashSet<>(WhileInitializedVars);
                 break;
         }
 
-        whileStatement.cond().accept(this);
-
+        // while part, with while scope
         scope = Scope.While;
         whileStatement.body().accept(this);
 
-        WhileInitializedVars = new HashSet<>();
-        if(whileBefore != null){
-            WhileInitializedVars.addAll(whileBefore);
-        }
+        // Inside a while, the initializations don't count for uses after the loop, because we can't be sure that the loop executes at all.
+        // back to before scope + sets state
+        InitializedVars = new HashSet<>(beforeInitialized);
+        ThenInitializedVars = new HashSet<>(beforeThan);
+        ElseInitializedVars = new HashSet<>(beforeElse);
+        WhileInitializedVars = new HashSet<>(beforeWhile);
         scope = before;
     }
 
@@ -157,69 +164,67 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
 
     @Override
     public void visit(IfStatement ifStatement) {
+
+        // visit cond, previous scope setting
+        ifStatement.cond().accept(this);
+
+        // save before scope + sets state
         Scope before = scope;
+        Set<String> beforeInitialized = new HashSet<>(InitializedVars);
+        Set<String> beforeThan = new HashSet<>(ThenInitializedVars);
+        Set<String> beforeElse = new HashSet<>(ElseInitializedVars);
+        Set<String> beforeWhile = new HashSet<>(WhileInitializedVars);
 
-        Set<String> thanBefore = null;
-        Set<String> elseBefore = null;
-
+        // add initialized vars from previous scope to current then-else scope
         switch(before){
             case Method:
-                ThenInitializedVars = new HashSet<>();
-                ElseInitializedVars = new HashSet<>();
-                ThenInitializedVars.addAll(InitializedVars);
-                ElseInitializedVars.addAll(InitializedVars);
+                ThenInitializedVars = new HashSet<>(beforeInitialized);
+                ElseInitializedVars = new HashSet<>(beforeInitialized);
                 break;
             case Than:
-                thanBefore = new HashSet<>();
-                elseBefore = new HashSet<>();
-                thanBefore.addAll(ThenInitializedVars);
-                elseBefore.addAll(ElseInitializedVars);
-                ThenInitializedVars = new HashSet<>(thanBefore);
-                ElseInitializedVars = new HashSet<>(thanBefore);
+                ThenInitializedVars = new HashSet<>(beforeThan);
+                ElseInitializedVars = new HashSet<>(beforeThan);
                 break;
             case Else:
-                thanBefore = new HashSet<>();
-                elseBefore = new HashSet<>();
-                thanBefore.addAll(ThenInitializedVars);
-                elseBefore.addAll(ElseInitializedVars);
-                ThenInitializedVars = new HashSet<>(elseBefore);
-                ElseInitializedVars = new HashSet<>(elseBefore);
+                ThenInitializedVars = new HashSet<>(beforeElse);
+                ElseInitializedVars = new HashSet<>(beforeElse);
                 break;
             case While:
-                ThenInitializedVars = new HashSet<>();
-                ElseInitializedVars = new HashSet<>();
-                ThenInitializedVars.addAll(WhileInitializedVars);
-                ElseInitializedVars.addAll(WhileInitializedVars);
+                ThenInitializedVars = new HashSet<>(beforeWhile);
+                ElseInitializedVars = new HashSet<>(beforeWhile);
                 break;
         }
 
-        ifStatement.cond().accept(this);
-
+        // then part, with then scope
         scope = Scope.Than;
         ifStatement.thencase().accept(this);
 
+        // get intersection of these sets - first then set
+        Set<String> intersectSet = new HashSet<>(ThenInitializedVars);
+
+        // else part, with else scope
         scope = Scope.Else;
         ifStatement.elsecase().accept(this);
 
-        Set<String> intersectSet = new HashSet<>(ThenInitializedVars);
+        // get intersection of these sets - intersect with else set
         intersectSet.retainAll(ElseInitializedVars);
 
+        // back to before scope + sets state
+        InitializedVars = new HashSet<>(beforeInitialized);
+        ThenInitializedVars = new HashSet<>(beforeThan);
+        ElseInitializedVars = new HashSet<>(beforeElse);
+        WhileInitializedVars = new HashSet<>(beforeWhile);
+        scope = before;
+
+        // add intersection to before scope set
         switch(before){
             case Method:
                 InitializedVars.addAll(intersectSet);
                 break;
             case Than:
-                ThenInitializedVars = new HashSet<>();
-                ElseInitializedVars = new HashSet<>();
-                ThenInitializedVars.addAll(thanBefore);
                 ThenInitializedVars.addAll(intersectSet);
-                ElseInitializedVars.addAll(elseBefore);
                 break;
             case Else:
-                ThenInitializedVars = new HashSet<>();
-                ElseInitializedVars = new HashSet<>();
-                ThenInitializedVars.addAll(thanBefore);
-                ElseInitializedVars.addAll(elseBefore);
                 ElseInitializedVars.addAll(intersectSet);
                 break;
             case While:
@@ -227,10 +232,6 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
                 break;
         }
 
-        scope = before;
     }
-
-
-
 
 }
