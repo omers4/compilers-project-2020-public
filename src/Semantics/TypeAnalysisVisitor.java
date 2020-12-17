@@ -147,13 +147,12 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     public void visit(MethodCallExpr e) {
         isOwner = true;
         e.ownerExpr().accept(this);
-        // TODO: Get owner static type
-        String ownerStaticType = "";
+        String ownerStaticType = ((RefType) lastType).id();
         isOwner = false;
         var classSymbolTableItem = symbolTable.getSymbolTable(e).get(new SymbolItemKey(ownerStaticType,SymbolType.Class));
         var classMethods = classSymbolTableItem.getVTable().getMethods();
         if (!classMethods.containsKey(e.methodId()))
-        {   
+        {
             valid=false;
             return;
         }
@@ -161,12 +160,12 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         for (int i = 0; i< e.actuals().size(); i++) {
             e.actuals().get(i).accept(this);
 
-            // TODO: Get formal static type
-            String formalStaticType = "";
+            String formalStaticType = ((RefType) lastType).id();
 
             // Get static type of declaration variable in the same way
-            methodFormalsDeclaration.get(i);
-            String formalDeclStaticType = "";
+            // TODO: need to check that accepting this new formal wont affect the progeam
+            methodFormalsDeclaration.get(i).accept(this);;
+            String formalDeclStaticType = ((RefType) lastType).id();
 
             if (formalDeclStaticType.equals(formalStaticType))
                 continue;
