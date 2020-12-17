@@ -58,7 +58,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     private Boolean CheckForDuplicateValues(Collection<String> values) {
         HashSet<String> valuesSet = new HashSet<>(values);
 
-        return values.size() == valuesSet.size();
+        return !(values.size() == valuesSet.size());
     }
 
     @Override

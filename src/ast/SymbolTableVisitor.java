@@ -68,8 +68,8 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         // TODO: When encounter object, add to symboltableItem it's VTAble
 
         program.mainClass().accept(this);
-
         for (ClassDecl classdecl : program.classDecls()) {
+            _astToSymbolTable.addMapping(classdecl, _symbolTableHierarchy.peek());
             var key = new SymbolItemKey(classdecl.name(), SymbolType.Class);
             var val = new SymbolTableItem(classdecl.name(), createVTable(classdecl));
             _symbolTableHierarchy.peek().addSymbol(key,val);
@@ -80,14 +80,14 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
     @Override
     public void visit(ClassDecl classDecl) {
 
-        SymbolTable parentSymbolTable = null;
-
-        if (classDecl.superName() != null) {
-            parentSymbolTable = _classesSymbolTable.get(classDecl.superName());
-        }
+//        SymbolTable parentSymbolTable = null;
+//
+//        if (classDecl.superName() != null) {
+//            parentSymbolTable = _classesSymbolTable.get(classDecl.superName());
+//        }
 
         // Order matters. We first connect the Ast to a new SymbolTable and then we add it to the mapping using peek
-        _symbolTableHierarchy.push((new SymbolTable(parentSymbolTable)));
+        _symbolTableHierarchy.push((new SymbolTable(_symbolTableHierarchy.peek())));
         _astToSymbolTable.addMapping(classDecl, _symbolTableHierarchy.peek());
 
         _type = SymbolType.Field;
