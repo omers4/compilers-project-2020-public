@@ -9,6 +9,7 @@ build.xml
 compilers-project-2020-public.iml
 
 examples/examples.iml
+examples/ex2
 
 src/Lexer.java
 src/Parser.java

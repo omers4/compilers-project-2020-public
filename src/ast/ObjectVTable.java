@@ -20,14 +20,16 @@ public class ObjectVTable {
     private String Id;
     private LinkedHashMap<String, AstType> fields;
     private LinkedHashMap<String, MethodSignature> methods;
+    private String superName;
 
-    public ObjectVTable(String id) {
+    public ObjectVTable(String id, String superName) {
 
         this.Id = id;
 
         // Order is important to know later where each field resides in memory;
         fields = new LinkedHashMap<>();
         methods = new LinkedHashMap<>();
+        this.superName = superName;
     }
 
     public int getFieldIndex(String field) {
@@ -62,4 +64,6 @@ public class ObjectVTable {
     public LinkedHashMap<String, AstType> getFields() {
         return this.fields;
     }
+
+    public String superName() {return this.superName;}
 }

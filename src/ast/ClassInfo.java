@@ -18,10 +18,14 @@ public class ClassInfo {
     );
 
     public void addClassInfo(String className, ObjectVTable info) {
-        classesToInfo.put(className,info);
+        classesToInfo.put(className, info);
     }
 
-    public ObjectVTable getClassVTable(String classId) { return this.classesToInfo.get(classId);}
+    public ObjectVTable getClassVTable(String classId) {
+        if (!this.classesToInfo.containsKey(classId))
+            return null;
+        return this.classesToInfo.get(classId);
+    }
 
     public int getClassPhysicalSize(String classId) {
         ObjectVTable classInfo = classesToInfo.get(classId);

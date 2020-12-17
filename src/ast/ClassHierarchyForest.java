@@ -132,4 +132,17 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
         }
         return false;
     }
+
+    public void getTreesNames(List<String> names) {
+        List<ClassTree> all_trees = new ArrayList<>();
+        for (ClassTree tree : trees){
+            all_trees.add(tree);
+            tree.getFamilyList(all_trees);
+        }
+
+        for (ClassTree tree : all_trees){
+            names.add(tree.getData().name());
+        }
+    }
+
 }
