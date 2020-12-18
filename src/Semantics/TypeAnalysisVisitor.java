@@ -1,29 +1,33 @@
 package Semantics;
 
+import LLVM.LLVMCommandFormatter;
+import LLVM.LLVMRegisterAllocator;
 import ast.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
 public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
     private boolean isOwner;
+    private ClassInfo classInfo;
 
     public TypeAnalysisVisitor(IAstToSymbolTable symbolTable, ClassHierarchyForest hierarchy) {
         super(symbolTable, hierarchy);
     }
 
-    private Boolean CheckForDuplicateFields(Collection<String> fields1, Collection<String> fields2) {
+    private Boolean ContainsDuplicateValues(Collection<String> values1, Collection<String> values2) {
 
         HashSet<String> allFields = new HashSet<>();
-        allFields.addAll(fields1);
-        allFields.addAll(fields2);
-        HashSet<String> fields1Set = new HashSet<>(fields1);
-        HashSet<String> fields2Set = new HashSet<>(fields2);
+        allFields.addAll(values1);
+        allFields.addAll(values2);
+        HashSet<String> fields1Set = new HashSet<>(values1);
+        HashSet<String> fields2Set = new HashSet<>(values2);
 
-        return !(fields1Set.size() == fields1.size() && fields2Set.size() == fields2.size()
-                && fields1.size() + fields2.size() == allFields.size());
+        return !(fields1Set.size() == values1.size() && fields2Set.size() == values2.size()
+                && values1.size() + values2.size() == allFields.size());
     }
 
     private Boolean AreFormalsTheSame(List<FormalArg> formals1, List<FormalArg> formals2) {
@@ -38,18 +42,17 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         return true;
     }
 
-    private Boolean CheckForOveridingMethods(LinkedHashMap<String, MethodSignature> methods1,
-                                               LinkedHashMap<String, MethodSignature> methods2) {
+    private Boolean ContainsOverridingMethods(List<MethodDecl> methods1,
+                                              List<MethodDecl> methods2) {
 
-        List<Map.Entry<String, MethodSignature>> intersectionMethods = methods1.entrySet().stream()
-                .distinct()
-                .filter(methods2.entrySet()::contains)
-                .collect(toList());
-
-        for (var method : intersectionMethods) {
-            var otherMethod = methods2.get(method.getKey());
-            if (!AreFormalsTheSame(method.getValue().getFormals(), otherMethod.getFormals()))
-                return true;
+        List<String> method2names = methods2.stream().map(MethodDecl::name).collect(Collectors.toList());
+        for (var method : methods1) {
+            if (method2names.contains(method.name())) {
+                var superMethod = methods2.stream().filter(x -> x.name()
+                        .equals(method.name())).collect(Collectors.toList()).get(0);
+                if (!AreFormalsTheSame(method.formals(), superMethod.formals()))
+                    return true;
+            }
         }
 
         return false;
@@ -62,28 +65,39 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     }
 
     @Override
+    public void visit(Program program) {
+        ast.LLVMPreProcessVisitor preProcessVisitor = new ast.LLVMPreProcessVisitor(symbolTable, new LLVMCommandFormatter(), new LLVMRegisterAllocator(symbolTable));
+        preProcessVisitor.visit(program);
+        this.classInfo = preProcessVisitor.getClassInfo();
+
+        program.mainClass().accept(this);
+        for (ClassDecl classdecl : program.classDecls()) {
+            classdecl.accept(this);
+        }
+    }
+
+    @Override
     public void visit(ClassDecl classDecl) {
 
         if (classDecl.superName() != null) {
-            SymbolTableItem superClassSymbolTable = symbolTable.getSymbolTable(classDecl)
-                    .get(new SymbolItemKey(classDecl.superName(), SymbolType.Class));
 
-            SymbolTableItem currentClassSymbolTable = symbolTable.getSymbolTable(classDecl)
-                    .get(new SymbolItemKey(classDecl.name(), SymbolType.Class));
+            ClassDecl superClassNode = classInfo.getClassNode(classDecl.superName());
 
-            var superClassFields = superClassSymbolTable.getVTable().getFields();
-            var currentClassFields = currentClassSymbolTable.getVTable().getFields();
+            Collection<String> curClassFields = classDecl.fields().stream().map(VariableIntroduction::name)
+                    .collect(Collectors.toList());
+            Collection<String> superClassFields = superClassNode.fields().stream().map(VariableIntroduction::name)
+                    .collect(Collectors.toList());
 
-//            if (CheckForDuplicateFields(currentClassFields.keySet(), superClassFields.keySet())) {
-//                this.valid = false;
-//                return;
-//            }
+            if (ContainsDuplicateValues(curClassFields, superClassFields)) {
+                this.valid = false;
+                return;
+            }
 
-            var superClassMethods = superClassSymbolTable.getVTable().getMethods();
-            var currentClassMethods = currentClassSymbolTable.getVTable().getMethods();
+            var superClassMethods = classDecl.methoddecls();
+            var currentClassMethods = superClassNode.methoddecls();
 
 
-            if (CheckForOveridingMethods(currentClassMethods, superClassMethods)) {
+            if (ContainsOverridingMethods(currentClassMethods, superClassMethods)) {
                 this.valid = false;
                 return;
             }
@@ -139,8 +153,8 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         }
         methodDecl.ret().accept(this);
 
-//        if (!lastType.equals(methodDecl.returnType()))
-//            valid = false;
+        if (!lastType.equals(methodDecl.returnType()))
+            valid = false;
     }
 
     @Override
@@ -149,29 +163,31 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         e.ownerExpr().accept(this);
         String ownerStaticType = ((RefType) lastType).id();
         isOwner = false;
-        var classSymbolTableItem = symbolTable.getSymbolTable(e).get(new SymbolItemKey(ownerStaticType,SymbolType.Class));
-        var classMethods = classSymbolTableItem.getVTable().getMethods();
-        if (!classMethods.containsKey(e.methodId()))
-        {
-            valid=false;
+        ClassDecl classDecl = classInfo.getClassNode(ownerStaticType);
+        var classMethods = classDecl.methoddecls();
+        if (!classMethods.stream().map(MethodDecl::name).collect(Collectors.toList()).contains(e.methodId())) {
+            valid = false;
+            lastType = null;
             return;
         }
-        var methodInfo = classMethods.get(e.methodId());
-        var methodFormalsDeclaration = methodInfo.getFormals();
-        for (int i = 0; i< e.actuals().size(); i++) {
+        var methodInfo = classMethods.stream().filter(x -> x.name()
+                .equals(e.methodId())).collect(Collectors.toList()).get(0);
+        var methodFormalsDeclaration = methodInfo.formals();
+        for (int i = 0; i < e.actuals().size(); i++) {
             e.actuals().get(i).accept(this);
 
             String formalStaticType = ((RefType) lastType).id();
 
             // Get static type of declaration variable in the same way
             // TODO: need to check that accepting this new formal wont affect the progeam
-            methodFormalsDeclaration.get(i).accept(this);;
+            methodFormalsDeclaration.get(i).accept(this);
+            ;
             String formalDeclStaticType = ((RefType) lastType).id();
 
             if (formalDeclStaticType.equals(formalStaticType))
                 continue;
 
-            String classSuperName = symbolTable.getSymbolTable(e).get(new SymbolItemKey(formalStaticType,SymbolType.Class))
+            String classSuperName = symbolTable.getSymbolTable(e).get(new SymbolItemKey(formalStaticType, SymbolType.Class))
                     .getVTable().superName();
 
             // We can check only for ine super name because there is not deep inheritance in mini java
@@ -181,7 +197,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
             valid = false;
 
         }
-        this.lastType = methodInfo.getRet();
+        this.lastType = methodInfo.returnType();
     }
 
     private void visitBinaryExpr(BinaryExpr e, AstType requiredType) {
@@ -203,10 +219,9 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
     @Override
     public void visit(NewObjectExpr e) {
-        try {
-            lastType = new RefType(e.classId());
-            symbolTable.getSymbolTable(e).get(new SymbolItemKey(e.classId(), SymbolType.Class));
-        } catch (NoSuchElementException exc) {
+
+        lastType = new RefType(e.classId());
+        if (null == classInfo.getClassNode(e.classId())) {
             valid = false;
             lastType = null;
         }

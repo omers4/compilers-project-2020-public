@@ -86,7 +86,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
         ObjectVTable vTable = createVTable(classDecl);
         SymbolTable curContextSymbolTable = _symbolTableHierarchy.peek();
         SymbolItemKey key = new SymbolItemKey(classDecl.name(), SymbolType.Class);
-        SymbolTableItem val  = new SymbolTableItem(classDecl.name(), vTable);
+        SymbolTableItem val  = new SymbolTableItem(classDecl.name(), vTable, classDecl);
         curContextSymbolTable.addSymbol(key, val);
 
         _type = SymbolType.Field;

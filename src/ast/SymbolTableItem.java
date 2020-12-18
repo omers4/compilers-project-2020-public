@@ -8,6 +8,7 @@ public class SymbolTableItem {
     private ObjectVTable _vTable;
     private MethodSignature _methodSignature;
     private SymbolType _subKind;
+    private AstNode _node;
 
 
     public SymbolTableItem(String id, AstType type, SymbolType subKind) {
@@ -29,6 +30,13 @@ public class SymbolTableItem {
         _methodSignature = methodSignature;
     }
 
+    public SymbolTableItem(String id, ObjectVTable vTable, AstNode node) {
+        this._id = id;
+        _registerAddr = null;
+        _vTable = vTable;
+        _node = node;
+    }
+
     public String getRegisterId() {
         return _registerAddr;
     }
@@ -48,6 +56,8 @@ public class SymbolTableItem {
     }
 
     public ObjectVTable getVTable() {return _vTable; }
+
+    public AstNode getNode() {return _node; }
 
     public MethodSignature getMethodSignature() {return _methodSignature; }
 

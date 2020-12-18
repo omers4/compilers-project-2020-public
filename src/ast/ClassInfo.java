@@ -10,6 +10,8 @@ public class ClassInfo {
 
     private Map<String, ObjectVTable> classesToInfo = new HashMap<>();
 
+    private Map<String, ClassDecl> classesToNodes = new HashMap<>();
+
     Map<Class, Integer> astTypeToSize = Map.ofEntries(
             entry(BoolAstType.class, 1),
             entry(IntArrayAstType.class, 8),
@@ -17,14 +19,22 @@ public class ClassInfo {
             entry(RefType.class, 8)
     );
 
-    public void addClassInfo(String className, ObjectVTable info) {
+    public void addClassInfo(String className, ObjectVTable info, ClassDecl node) {
+
         classesToInfo.put(className, info);
+        classesToNodes.put(className, node);
     }
 
     public ObjectVTable getClassVTable(String classId) {
         if (!this.classesToInfo.containsKey(classId))
             return null;
         return this.classesToInfo.get(classId);
+    }
+
+    public ClassDecl getClassNode(String classId) {
+        if (!this.classesToNodes.containsKey(classId))
+            return null;
+        return this.classesToNodes.get(classId);
     }
 
     public int getClassPhysicalSize(String classId) {

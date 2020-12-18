@@ -22,7 +22,7 @@ public class LLVMPreProcessVisitor implements IVisitorWithField<String> {
 
     private void printClassVTAble(SymbolTableItem classItem) {
         String globalVTableName = registerAllocator.allocateVTableRegister(classItem.getId());
-        classInfo.addClassInfo(classItem.getId(), classItem.getVTable());
+        classInfo.addClassInfo(classItem.getId(), classItem.getVTable(), (ClassDecl)classItem.getNode());
         stringBuilder.append(formatter.formatGlobalVTable(globalVTableName, classItem.getVTable().getMethods().values().stream()
                 .map(MethodSignature::toLLVMSignature).collect( Collectors.toList())));
     }
