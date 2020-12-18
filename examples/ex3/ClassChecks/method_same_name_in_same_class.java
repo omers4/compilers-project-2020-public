@@ -18,4 +18,12 @@ class Example {
 		xx = x;
 		return x - 1;
 	}
+
+	public int run() {
+		int x;
+		int xx;
+		x = 1;
+		xx = x;
+		return x - 1;
+	}
 }
