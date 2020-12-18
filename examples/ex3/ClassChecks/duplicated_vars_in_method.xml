@@ -71,7 +71,22 @@
                         <int/>
                     </returnType>
                     <name>other</name>
-                    <formals/>
+                    <formals>
+                        <formal>
+                            <lineNumber>8</lineNumber>
+                            <type>
+                                <int/>
+                            </type>
+                            <name>s</name>
+                        </formal>
+                        <formal>
+                            <lineNumber>8</lineNumber>
+                            <type>
+                                <int/>
+                            </type>
+                            <name>s</name>
+                        </formal>
+                    </formals>
                     <vardecls>
                         <vardecl>
                             <lineNumber>16</lineNumber>
@@ -85,26 +100,10 @@
                             <type>
                                 <int/>
                             </type>
-                            <name>xx</name>
+                            <name>x</name>
                         </vardecl>
                     </vardecls>
                     <body>
-                        <assign>
-                            <lv>x</lv>
-                            <rv>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </rv>
-                        </assign>
-                        <assign>
-                            <lv>xx</lv>
-                            <rv>
-                                <ref-id>
-                                    <id>x</id>
-                                </ref-id>
-                            </rv>
-                        </assign>
                     </body>
                     <ret>
                         <subtract>
@@ -122,41 +121,6 @@
                     </ret>
                 </methoddecl>
             </methoddecls>
-        </classdecl>
-        <classdecl>
-        <name>A</name>
-        <superName>Example</superName>
-        <fields>
-        </fields>
-        <methoddecls>
-            <methoddecl>
-                <lineNumber>22</lineNumber>
-                <returnType>
-                    <int/>
-                </returnType>
-                <name>run</name>
-                <formals>
-                    <formal>
-                        <lineNumber>25</lineNumber>
-                        <type>
-                            <int/>
-                        </type>
-                        <name>s</name>
-                    </formal>
-                </formals>
-                <vardecls/>
-                <body/>
-                <ret>
-                    <call>
-                        <ownerExpr>
-                            <this/>
-                        </ownerExpr>
-                        <methodId>foo</methodId>
-                        <actuals/>
-                    </call>
-                </ret>
-            </methoddecl>
-        </methoddecls>
         </classdecl>
     </classdecls>
 </program>

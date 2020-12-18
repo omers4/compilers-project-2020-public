@@ -153,7 +153,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         }
         methodDecl.ret().accept(this);
 
-        if (!lastType.equals(methodDecl.returnType()))
+        if (valid && !lastType.equals(methodDecl.returnType()))
             valid = false;
     }
 

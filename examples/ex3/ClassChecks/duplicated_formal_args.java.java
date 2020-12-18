@@ -11,19 +11,11 @@ class Example {
         return x + x;
     }
 
-    public int other() {
+    public int other(int s, int s) {
         int x;
         int xx;
         x = 1;
         xx = x;
         return x - 1;
-    }
-}
-
-class A extends Example {
-    public int run() {
-        int x;
-        x = 0;
-        return x + x;
     }
 }
