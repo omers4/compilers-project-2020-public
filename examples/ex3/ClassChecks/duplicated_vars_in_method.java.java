@@ -12,18 +12,6 @@ class Example {
     }
 
     public int other() {
-        int x;
-        int xx;
-        x = 1;
-        xx = x;
         return x - 1;
-    }
-}
-
-class A extends Example {
-    public int run(int s) {
-        int x;
-        x = 0;
-        return x + x;
     }
 }

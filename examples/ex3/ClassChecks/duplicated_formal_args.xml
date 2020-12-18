@@ -71,7 +71,8 @@
                         <int/>
                     </returnType>
                     <name>other</name>
-                    <formals/>
+                   <formals>
+                   </formals>
                     <vardecls>
                         <vardecl>
                             <lineNumber>16</lineNumber>
@@ -122,41 +123,6 @@
                     </ret>
                 </methoddecl>
             </methoddecls>
-        </classdecl>
-        <classdecl>
-        <name>A</name>
-        <superName>Example</superName>
-        <fields>
-        </fields>
-        <methoddecls>
-            <methoddecl>
-                <lineNumber>22</lineNumber>
-                <returnType>
-                    <int/>
-                </returnType>
-                <name>run</name>
-                <formals>
-                    <formal>
-                        <lineNumber>25</lineNumber>
-                        <type>
-                            <int/>
-                        </type>
-                        <name>s</name>
-                    </formal>
-                </formals>
-                <vardecls/>
-                <body/>
-                <ret>
-                    <call>
-                        <ownerExpr>
-                            <this/>
-                        </ownerExpr>
-                        <methodId>foo</methodId>
-                        <actuals/>
-                    </call>
-                </ret>
-            </methoddecl>
-        </methoddecls>
         </classdecl>
     </classdecls>
 </program>
