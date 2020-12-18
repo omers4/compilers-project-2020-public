@@ -156,7 +156,8 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
             valid=false;
             return;
         }
-        var methodFormalsDeclaration = classMethods.get(e.methodId()).getFormals();
+        var methodInfo = classMethods.get(e.methodId());
+        var methodFormalsDeclaration = methodInfo.getFormals();
         for (int i = 0; i< e.actuals().size(); i++) {
             e.actuals().get(i).accept(this);
 
@@ -180,6 +181,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
             valid = false;
 
         }
+        this.lastType = methodInfo.getRet();
     }
 
     private void visitBinaryExpr(BinaryExpr e, AstType requiredType) {
@@ -202,6 +204,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     @Override
     public void visit(NewObjectExpr e) {
         try {
+            lastType = new RefType(e.classId());
             symbolTable.getSymbolTable(e).get(new SymbolItemKey(e.classId(), SymbolType.Class));
         } catch (NoSuchElementException exc) {
             valid = false;
