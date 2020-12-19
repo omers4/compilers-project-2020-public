@@ -19,11 +19,3 @@ class Example {
         return x - 1;
     }
 }
-
-class A extends Example {
-    public int run(int s) {
-        int x;
-        x = 0;
-        return x + x;
-    }
-}
