@@ -239,6 +239,11 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
              return;
 
         // TODO: Should be surrounded by try catch clause?
+        if (!(lastType instanceof RefType)) {
+            valid = false;
+            return;
+        }
+
         String ownerStaticType = ((RefType) lastType).id();
         isOwner = false;
 
@@ -263,13 +268,13 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     private void visitBinaryExpr(BinaryExpr e, AstType requiredType) {
         lastType = null;
         e.e1().accept(this);
-        if (lastType.getClass() != requiredType.getClass()) {
+        if (lastType == null || lastType.getClass() != requiredType.getClass()) {
             valid = false;
             return;
         }
 
         e.e2().accept(this);
-        if (lastType.getClass() != requiredType.getClass()) {
+        if (lastType == null || lastType.getClass() != requiredType.getClass()) {
             valid = false;
             return;
         }
@@ -297,6 +302,9 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     public void visit(LtExpr e) {
         visitBinaryExpr(e, new IntAstType());
         ;
+        if (valid) {
+            lastType = new BoolAstType();
+        }
     }
 
     @Override
@@ -404,12 +412,6 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
             return;
         }
 
-        lastType = null;
-        ifStatement.elsecase().accept(this);
-        if (!(lastType instanceof BoolAstType)) {
-            valid = false;
-        }
-
     }
 
     @Override
@@ -441,7 +443,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
 
             assignStatement.rv().accept(this);
-            if (lastType.getClass() != staticType.getClass()) {
+            if (lastType == null || lastType.getClass() != staticType.getClass()) {
                 valid = false;
                 return;
             }
@@ -453,10 +455,10 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
                 // A a = new B(); is allowed
 
                 // Just to verify they exist
-                symbolTableOfStmt.get(new SymbolItemKey(sourceRef.id(), SymbolType.Class));
-                symbolTableOfStmt.get(new SymbolItemKey(destRef.id(), SymbolType.Class));
+                var sourceCls = classInfo.getClassNode(sourceRef.id());
+                var destCls =  classInfo.getClassNode(destRef.id());
 
-                if (!hierarchy.isParent(sourceRef.id(), destRef.id())) {
+                if (sourceCls == null || destCls == null || !hierarchy.isParent(sourceRef.id(), destRef.id())) {
                     valid = false;
                 }
             }
