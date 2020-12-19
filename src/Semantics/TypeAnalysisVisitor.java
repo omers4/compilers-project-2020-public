@@ -42,16 +42,34 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         return true;
     }
 
-    private Boolean ContainsOverridingMethods(List<MethodDecl> methods1,
-                                              List<MethodDecl> methods2) {
+    private Boolean isSubTypeOf(AstType A, AstType B) {
+        var type = B;
+        while(type != null) {
+            if (A.equals(B))
+                return true;
+            if (!(type instanceof RefType))
+                return false;
 
-        List<String> method2names = methods2.stream().map(MethodDecl::name).collect(Collectors.toList());
-        for (var method : methods1) {
+            type = new RefType(classInfo.getClassNode(((RefType) type).id()).superName());
+        }
+
+        return false;
+    }
+
+    private Boolean ContainsOverloadingMethods(List<MethodDecl> methods,
+                                               List<MethodDecl> parentMethods) {
+
+        List<String> method2names = parentMethods.stream().map(MethodDecl::name).collect(Collectors.toList());
+        for (var method : methods) {
             if (method2names.contains(method.name())) {
-                var superMethod = methods2.stream().filter(x -> x.name()
+                var superMethod = parentMethods.stream().filter(x -> x.name()
                         .equals(method.name())).collect(Collectors.toList()).get(0);
                 if (!AreFormalsTheSame(method.formals(), superMethod.formals()))
                     return true;
+                if(!isSubTypeOf(method.returnType(), superMethod.returnType())) {
+                    return false;
+                }
+
             }
         }
 
@@ -79,28 +97,31 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     @Override
     public void visit(ClassDecl classDecl) {
 
-        if (classDecl.superName() != null) {
+        Collection<String> curClassFields = classDecl.fields().stream().map(VariableIntroduction::name)
+                .collect(Collectors.toList());
+        var currentClassMethods = classDecl.methoddecls();
+        var superName = classDecl.superName();
 
-            ClassDecl superClassNode = classInfo.getClassNode(classDecl.superName());
+        while (superName != null) {
 
-            Collection<String> curClassFields = classDecl.fields().stream().map(VariableIntroduction::name)
-                    .collect(Collectors.toList());
+            ClassDecl superClassNode = classInfo.getClassNode(superName);
+
             Collection<String> superClassFields = superClassNode.fields().stream().map(VariableIntroduction::name)
                     .collect(Collectors.toList());
 
-            if (ContainsDuplicateValues(curClassFields, superClassFields)) {
+            if (valid && ContainsDuplicateValues(curClassFields, superClassFields)) {
                 this.valid = false;
                 return;
             }
 
-            var superClassMethods = classDecl.methoddecls();
-            var currentClassMethods = superClassNode.methoddecls();
+            var superClassMethods = superClassNode.methoddecls();
 
-
-            if (ContainsOverridingMethods(currentClassMethods, superClassMethods)) {
+            if (valid && ContainsOverloadingMethods(currentClassMethods, superClassMethods)) {
                 this.valid = false;
                 return;
             }
+
+            superName = superClassNode.superName();
         }
 
         if (CheckForDuplicateValues(classDecl.fields().stream()
@@ -114,7 +135,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         }
 
 //
-        if (CheckForDuplicateValues(classDecl.methoddecls().stream()
+        if (valid && CheckForDuplicateValues(classDecl.methoddecls().stream()
                 .map(MethodDecl::name).collect(toList()))) {
             this.valid = false;
             return;
@@ -130,13 +151,13 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     public void visit(MethodDecl methodDecl) {
         methodDecl.returnType().accept(this);
 
-        if (CheckForDuplicateValues(methodDecl.formals().stream()
+        if (valid && CheckForDuplicateValues(methodDecl.formals().stream()
                 .map(VariableIntroduction::name).collect(toList()))) {
             this.valid = false;
             return;
         }
 
-        if (CheckForDuplicateValues(methodDecl.vardecls().stream()
+        if (valid && CheckForDuplicateValues(methodDecl.vardecls().stream()
                 .map(VariableIntroduction::name).collect(toList()))) {
             this.valid = false;
             return;
@@ -157,46 +178,73 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
             valid = false;
     }
 
+    public Boolean isValidMethodUsage(List<Expr> actuals, List<FormalArg> args) {
+
+        for (int i = 0; i < actuals.size(); i++) {
+            actuals.get(i).accept(this);
+            AstType actualType = lastType;
+
+            // TODO: need to check that accepting this new formal wont affect the progeam
+            args.get(i).accept(this);
+            AstType formalType = lastType;
+
+            if (actualType.equals(formalType))
+                continue;
+
+            if (!(actualType instanceof RefType && formalType instanceof RefType)) {
+                return false;
+            }
+
+            var formalTypeId = ((RefType) formalType).id();
+            var superName = classInfo.getClassNode(((RefType) actualType).id()).superName();
+
+            while (superName != null) {
+                if (superName.equals(formalTypeId)) {
+                    break;
+                }
+                superName = classInfo.getClassNode(superName).superName();
+            }
+
+            if (superName == null)
+                return false;
+
+        }
+
+        return true;
+    }
+
     @Override
     public void visit(MethodCallExpr e) {
+        if (! (e.ownerExpr() instanceof NewObjectExpr || e.ownerExpr() instanceof ThisExpr ||
+                e.ownerExpr() instanceof IdentifierExpr)) {
+            valid = false;
+            return;
+        }
+
         isOwner = true;
         e.ownerExpr().accept(this);
+        if (!valid)
+             return;
+
+        // TODO: Should be surrounded by try catch clause?
         String ownerStaticType = ((RefType) lastType).id();
         isOwner = false;
+
         ClassDecl classDecl = classInfo.getClassNode(ownerStaticType);
         var classMethods = classDecl.methoddecls();
-        if (!classMethods.stream().map(MethodDecl::name).collect(Collectors.toList()).contains(e.methodId())) {
+        if (valid && !classMethods.stream().map(MethodDecl::name).collect(Collectors.toList()).contains(e.methodId())) {
             valid = false;
             lastType = null;
             return;
         }
         var methodInfo = classMethods.stream().filter(x -> x.name()
                 .equals(e.methodId())).collect(Collectors.toList()).get(0);
-        var methodFormalsDeclaration = methodInfo.formals();
-        for (int i = 0; i < e.actuals().size(); i++) {
-            e.actuals().get(i).accept(this);
-
-            String formalStaticType = ((RefType) lastType).id();
-
-            // Get static type of declaration variable in the same way
-            // TODO: need to check that accepting this new formal wont affect the progeam
-            methodFormalsDeclaration.get(i).accept(this);
-            ;
-            String formalDeclStaticType = ((RefType) lastType).id();
-
-            if (formalDeclStaticType.equals(formalStaticType))
-                continue;
-
-            String classSuperName = symbolTable.getSymbolTable(e).get(new SymbolItemKey(formalStaticType, SymbolType.Class))
-                    .getVTable().superName();
-
-            // We can check only for ine super name because there is not deep inheritance in mini java
-            if (classSuperName != null && classSuperName.equals(formalDeclStaticType))
-                continue;
-
+        if(!isValidMethodUsage(e.actuals(),methodInfo.formals())) {
             valid = false;
-
+            lastType =null;
+            return;
         }
+
         this.lastType = methodInfo.returnType();
     }
 
