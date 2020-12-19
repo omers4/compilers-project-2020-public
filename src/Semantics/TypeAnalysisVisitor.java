@@ -13,6 +13,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
     private boolean isOwner;
     private ClassInfo classInfo;
+    private ClassDecl curClass;
 
     public TypeAnalysisVisitor(IAstToSymbolTable symbolTable, ClassHierarchyForest hierarchy) {
         super(symbolTable, hierarchy);
@@ -90,6 +91,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
         program.mainClass().accept(this);
         for (ClassDecl classdecl : program.classDecls()) {
+            curClass = classdecl;
             classdecl.accept(this);
         }
     }
@@ -214,12 +216,18 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     }
 
     @Override
+    public void visit(ThisExpr e) {
+            lastType = new RefType(curClass.name());
+    }
+
+    @Override
     public void visit(MethodCallExpr e) {
         if (! (e.ownerExpr() instanceof NewObjectExpr || e.ownerExpr() instanceof ThisExpr ||
                 e.ownerExpr() instanceof IdentifierExpr)) {
             valid = false;
             return;
         }
+
 
         isOwner = true;
         e.ownerExpr().accept(this);
