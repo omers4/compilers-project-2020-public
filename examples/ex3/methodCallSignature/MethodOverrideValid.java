@@ -30,10 +30,16 @@ class B extends Example{
     public Example classRet(Example m, int k) {
         int x;
         x = 1;
-        return m;
+        s = new B();
+        return s;
     }
 
     public void test() {
+        Example k;
+        int h;
+        h=4;
+        k = new Example();
+        k = classRet(k, h)
         x = 4;
         return x+x;
     }

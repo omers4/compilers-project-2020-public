@@ -44,14 +44,18 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     }
 
     private Boolean isSubTypeOf(AstType A, AstType B) {
-        var type = B;
+        var type = A;
         while(type != null) {
-            if (A.equals(B))
+            if (type.equals(B))
                 return true;
-            if (!(type instanceof RefType))
+            if (!(type instanceof RefType && B instanceof RefType))
                 return false;
 
-            type = new RefType(classInfo.getClassNode(((RefType) type).id()).superName());
+            var info = classInfo.getClassNode(((RefType) type).id());
+            if (info.superName() == null)
+                break;
+
+            type = new RefType(info.superName());
         }
 
         return false;
@@ -176,7 +180,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         }
         methodDecl.ret().accept(this);
 
-        if (valid && !lastType.equals(methodDecl.returnType()))
+        if (valid && !isSubTypeOf(lastType,methodDecl.returnType()))
             valid = false;
     }
 

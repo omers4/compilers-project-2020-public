@@ -40,13 +40,7 @@
                         </ref>
                     </returnType>
                     <name>classRet</name>
-                    <formals>  <formal>
-                        <lineNumber>16</lineNumber>
-                        <type>
-                            <int/>
-                        </type>
-                        <name>y</name>
-                    </formal>
+                    <formals>
                         <formal>
                             <lineNumber>61</lineNumber>
                             <type>
@@ -185,13 +179,7 @@
                         </ref>
                     </returnType>
                     <name>classRet</name>
-                    <formals>  <formal>
-                        <lineNumber>16</lineNumber>
-                        <type>
-                            <int/>
-                        </type>
-                        <name>y</name>
-                    </formal>
+                    <formals>
                         <formal>
                             <lineNumber>61</lineNumber>
                             <type>
@@ -217,8 +205,23 @@
                             </type>
                             <name>x</name>
                         </vardecl>
+                        <vardecl>
+                            <lineNumber>17</lineNumber>
+                            <type>
+                                <ref><id>B</id></ref>
+                            </type>
+                            <name>s</name>
+                        </vardecl>
                     </vardecls>
                     <body>
+                        <assign>
+                            <lv>s</lv>
+                            <rv>
+                                <new-object>
+                                    <classId>B</classId>
+                                </new-object>
+                            </rv>
+                        </assign>
                         <assign>
                             <lv>x</lv>
                             <rv>
@@ -230,7 +233,7 @@
                     </body>
                     <ret>
                         <ref-id>
-                            <id>m</id>
+                            <id>s</id>
                         </ref-id>
                     </ret>
                 </methoddecl>
