@@ -51,8 +51,8 @@ public class Main {
 
                         semanticCheckers.add(new TypeAnalysisVisitor(astToSymbolTable, hierarchy));
                         // Add more visitors
-                       // semanticCheckers.add(new IdentifierSemanticsVisitor(astToSymbolTable, hierarchy));
-                        // semanticCheckers.add(new InitializationCheckVisitor(astToSymbolTable, hierarchy));
+                        semanticCheckers.add(new IdentifierSemanticsVisitor(astToSymbolTable, hierarchy));
+                        semanticCheckers.add(new InitializationCheckVisitor(astToSymbolTable, hierarchy));
 
                         for(ClassSemanticsVisitor visitor : semanticCheckers) {
                             visitor.visit(prog);
