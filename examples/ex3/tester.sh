@@ -56,5 +56,6 @@ test OwnerExprValidField methodCall
 test OwnerExprValidNew methodCall
 test OwnerExprValidThis methodCall
 test MethodDoesNotExist methodCallSignature
+test MethodOverrideValid methodCallSignature
 
 

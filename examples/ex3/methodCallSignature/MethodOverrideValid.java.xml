@@ -185,7 +185,13 @@
                         </ref>
                     </returnType>
                     <name>classRet</name>
-                    <formals>
+                    <formals>  <formal>
+                        <lineNumber>16</lineNumber>
+                        <type>
+                            <int/>
+                        </type>
+                        <name>y</name>
+                    </formal>
                         <formal>
                             <lineNumber>61</lineNumber>
                             <type>
