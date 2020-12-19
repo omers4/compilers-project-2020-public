@@ -28,7 +28,7 @@ class Example {
 class B extends Example{
 
     public Example classRet(Example m, int k) {
-        Example s = classRet(new B())
+        int x;
         x = 1;
         return m;
     }
