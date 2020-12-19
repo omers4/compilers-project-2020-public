@@ -45,3 +45,8 @@ test arraysInvalidAccess arrays
 test arraysInvalidAssignment arrays
 test AssignmentInvalid yotam
 test AssignmentValid yotam
+test IfValid generalTypeChecks
+test IfInvalidNonBooleanCond generalTypeChecks
+test sysoutValid generalTypeChecks
+test sysoutInvalidNonIntCond generalTypeChecks
+test whileValid generalTypeChecks
