@@ -6,21 +6,9 @@
         <mainStatement>
             <sysout>
                 <arg>
-                    <call>
-                        <ownerExpr>
-                            <new-object>
-<classId>Fac</classId>
-                            </new-object>
-                        </ownerExpr>
-                        <methodId>ComputeFac</methodId>
-                        <actuals>
-                            <actual>
-<int-literal>
-    <num>10</num>
-</int-literal>
-                            </actual>
-                        </actuals>
-                    </call>
+                    <int-literal>
+                        <num>2</num>
+                    </int-literal>
                 </arg>
             </sysout>
         </mainStatement>

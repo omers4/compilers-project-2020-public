@@ -45,6 +45,10 @@ test arraysInvalidAccess arrays
 test arraysInvalidAssignment arrays
 test AssignmentInvalid yotam
 test AssignmentValid yotam
+test InitVarInvalid yotam
+test InitVarValid yotam
+test OwnerExprInvalid yotam
+test OwnerExprValid yotam
 test IfValid generalTypeChecks
 test IfInvalidNonBooleanCond generalTypeChecks
 test sysoutValid generalTypeChecks

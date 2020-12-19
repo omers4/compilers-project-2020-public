@@ -47,7 +47,7 @@
                                 <call>
                                     <ownerExpr>
                                         <new-object>
-                                            <classId>Example</classId>
+                                            <classId>Simple</classId>
                                         </new-object>
                                     </ownerExpr>
                                     <methodId>num</methodId>
