@@ -5,6 +5,7 @@ class Main {
 }
 
 class Example {
+    Example left;
     public int run() {
         int x;
         x = 0;
@@ -21,6 +22,7 @@ class Example {
 }
 
 class A extends Example {
+    Example left;
     public int run(int s) {
         int x;
         x = 0;

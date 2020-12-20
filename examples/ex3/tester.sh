@@ -79,6 +79,12 @@ test OwnerExprValidThis methodCall
 
 test duplicated_formal_args ClassChecks
 test duplicated_vars_in_method ClassChecks
+test method_ret_type_invalid ClassChecks
+test method_same_name_in_inheritance_class ClassChecks
+test method_same_name_in_inheritance_class2 ClassChecks
+test method_same_name_in_same_class ClassChecks
+test several_fields_in_the_inheritance_class ClassChecks
+test several_fields_in_the_same_class ClassChecks
 
 
 test MethodDoesNotExist methodCallSignature

@@ -5,6 +5,8 @@ class Main {
 }
 
 class Example {
+    int key;
+    int key;
     public int run() {
         int x;
         x = 0;
