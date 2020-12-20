@@ -85,7 +85,7 @@ test method_same_name_in_inheritance_class2 ClassChecks
 test method_same_name_in_same_class ClassChecks
 test several_fields_in_the_inheritance_class ClassChecks
 test several_fields_in_the_same_class ClassChecks
-
+test main_name_duplicate ClassChecks
 
 test MethodDoesNotExist methodCallSignature
 test MethodOverrideValid methodCallSignature
