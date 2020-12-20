@@ -30,8 +30,23 @@
                         <int/>
                     </returnType>
                     <name>run</name>
-                    <formals/>
+                    <formals>
+                        <formal>
+                            <lineNumber>18</lineNumber>
+                            <type>
+                                <int/>
+                            </type>
+                            <name>s</name>
+                        </formal>
+                    </formals>
                     <vardecls>
+                        <vardecl>
+                            <lineNumber>10</lineNumber>
+                            <type>
+                                <int/>
+                            </type>
+                            <name>x</name>
+                        </vardecl>
                         <vardecl>
                             <lineNumber>10</lineNumber>
                             <type>
@@ -63,61 +78,6 @@
                                 </ref-id>
                             </e2>
                         </add>
-                    </ret>
-                </methoddecl>
-                <methoddecl>
-                    <lineNumber>19</lineNumber>
-                    <returnType>
-                        <int/>
-                    </returnType>
-                    <name>other</name>
-                    <formals>
-                        <formal>
-                            <lineNumber>8</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>s</name>
-                        </formal>
-                        <formal>
-                            <lineNumber>8</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>s</name>
-                        </formal>
-                    </formals>
-                    <vardecls>
-                        <vardecl>
-                            <lineNumber>16</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>x</name>
-                        </vardecl>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>x</name>
-                        </vardecl>
-                    </vardecls>
-                    <body>
-                    </body>
-                    <ret>
-                        <subtract>
-                            <e1>
-                                <ref-id>
-                                    <id>x</id>
-                                </ref-id>
-                            </e1>
-                            <e2>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </e2>
-                        </subtract>
                     </ret>
                 </methoddecl>
             </methoddecls>

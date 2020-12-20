@@ -10,7 +10,7 @@ class Simple{
     }
 
     public int fun() {
-        System.out.println((new Example()).num());
+        System.out.println((new Simple()).num());
         return 0;
     }
 }

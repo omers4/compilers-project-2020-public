@@ -5,13 +5,10 @@ class Main {
 }
 
 class Example {
-    public int run() {
+    public int run(int s) {
+        int x;
         int x;
         x = 0;
         return x + x;
-    }
-
-    public int other() {
-        return x - 1;
     }
 }
