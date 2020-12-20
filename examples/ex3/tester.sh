@@ -77,6 +77,10 @@ test OwnerExprValidField methodCall
 test OwnerExprValidNew methodCall
 test OwnerExprValidThis methodCall
 
+test duplicated_formal_args ClassChecks
+test duplicated_vars_in_method ClassChecks
+
+
 test MethodDoesNotExist methodCallSignature
 test MethodOverrideValid methodCallSignature
 

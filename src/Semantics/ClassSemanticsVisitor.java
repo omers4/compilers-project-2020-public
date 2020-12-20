@@ -190,17 +190,21 @@ public class ClassSemanticsVisitor implements Visitor {
 
     @Override
     public void visit(IntAstType t) {
+        lastType = t;
     }
 
     @Override
     public void visit(BoolAstType t) {
+        lastType = t;
     }
 
     @Override
     public void visit(IntArrayAstType t) {
+        lastType = t;
     }
 
     @Override
     public void visit(RefType t) {
+        lastType = t;
     }
 }

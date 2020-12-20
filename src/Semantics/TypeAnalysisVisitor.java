@@ -458,7 +458,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
                 var sourceCls = classInfo.getClassNode(sourceRef.id());
                 var destCls =  classInfo.getClassNode(destRef.id());
 
-                if (sourceCls == null || destCls == null || !hierarchy.isParent(sourceRef.id(), destRef.id())) {
+                if (sourceCls == null || destCls == null || !isSubTypeOf(sourceRef, destRef)) {
                     valid = false;
                 }
             }
