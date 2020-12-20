@@ -186,6 +186,9 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
 
     public Boolean isValidMethodUsage(List<Expr> actuals, List<FormalArg> args) {
 
+        if(actuals.size() != args.size())
+            return false;
+
         for (int i = 0; i < actuals.size(); i++) {
             actuals.get(i).accept(this);
             AstType actualType = lastType;

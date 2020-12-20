@@ -89,7 +89,6 @@ test main_name_duplicate ClassChecks
 
 test MethodDoesNotExist methodCallSignature
 test MethodOverrideValid methodCallSignature
-test MethodWrongRet methodCallSignature
 test MethodOverloadingDiffType methodCallSignature
 test MethodOverloadingExtraParam methodCallSignature
 test MethodCallWrongActual methodCallSignature
