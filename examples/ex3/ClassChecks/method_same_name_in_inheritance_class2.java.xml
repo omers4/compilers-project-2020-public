@@ -65,62 +65,6 @@
                         </add>
                     </ret>
                 </methoddecl>
-                <methoddecl>
-                    <lineNumber>19</lineNumber>
-                    <returnType>
-                        <int/>
-                    </returnType>
-                    <name>other</name>
-                    <formals/>
-                    <vardecls>
-                        <vardecl>
-                            <lineNumber>16</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>x</name>
-                        </vardecl>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>xx</name>
-                        </vardecl>
-                    </vardecls>
-                    <body>
-                        <assign>
-                            <lv>x</lv>
-                            <rv>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </rv>
-                        </assign>
-                        <assign>
-                            <lv>xx</lv>
-                            <rv>
-                                <ref-id>
-                                    <id>x</id>
-                                </ref-id>
-                            </rv>
-                        </assign>
-                    </body>
-                    <ret>
-                        <subtract>
-                            <e1>
-                                <ref-id>
-                                    <id>x</id>
-                                </ref-id>
-                            </e1>
-                            <e2>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </e2>
-                        </subtract>
-                    </ret>
-                </methoddecl>
             </methoddecls>
         </classdecl>
         <classdecl>
@@ -132,28 +76,34 @@
                 <methoddecl>
                     <lineNumber>22</lineNumber>
                     <returnType>
-                        <void/>
+                        <ref/>
                     </returnType>
                     <name>run</name>
                     <formals>
-                        <formal>
-                            <lineNumber>25</lineNumber>
+                    </formals>
+                    <vardecls>
+                        <vardecl>
+                            <lineNumber>17</lineNumber>
                             <type>
-                                <int/>
+                                <ref><id>Example</id></ref>
                             </type>
                             <name>s</name>
-                        </formal>
-                    </formals>
-                    <vardecls/>
-                    <body/>
+                        </vardecl>
+                    </vardecls>
+                    <body>
+                        <assign>
+                            <lv>s</lv>
+                            <rv>
+                                <new-object>
+                                    <classId>Example</classId>
+                                </new-object>
+                            </rv>
+                        </assign>
+                    </body>
                     <ret>
-                        <call>
-                            <ownerExpr>
-                                <this/>
-                            </ownerExpr>
-                            <methodId>foo</methodId>
-                            <actuals/>
-                        </call>
+                        <ref-id>
+                            <id>s</id>
+                        </ref-id>
                     </ret>
                 </methoddecl>
             </methoddecls>

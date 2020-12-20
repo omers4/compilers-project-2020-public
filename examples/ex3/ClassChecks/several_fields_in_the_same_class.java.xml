@@ -22,7 +22,19 @@
     <classdecls>
         <classdecl>
             <name>Example</name>
-            <fields/>
+            <fields> <field>
+                <lineNumber>55</lineNumber>
+                <type>
+                    <int/>
+                </type>
+                <name>key</name>
+            </field> <field>
+                <lineNumber>55</lineNumber>
+                <type>
+                    <int/>
+                </type>
+                <name>key</name>
+            </field></fields>
             <methoddecls>
                 <methoddecl>
                     <lineNumber>14</lineNumber>
