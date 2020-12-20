@@ -89,6 +89,9 @@ test main_name_duplicate ClassChecks
 
 test MethodDoesNotExist methodCallSignature
 test MethodOverrideValid methodCallSignature
+test MethodWrongRet methodCallSignature
+test MethodOvaeloadingDiffType methodCallSignature
+test MethodOvaeloadingExtraParam methodCallSignature
 
 test arrayNameInvalid varDeclarationChecks
 test arraysAssignInvalid varDeclarationChecks
