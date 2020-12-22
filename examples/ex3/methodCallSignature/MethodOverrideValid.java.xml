@@ -215,7 +215,7 @@
                         <vardecl>
                             <lineNumber>17</lineNumber>
                             <type>
-                                <ref><id>B</id></ref>
+                                <ref><id>Example</id></ref>
                             </type>
                             <name>k</name>
                         </vardecl>
