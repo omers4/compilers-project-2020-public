@@ -8,6 +8,7 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
     private Map<String,SymbolTable> _classesSymbolTable;
     private AstToSymbolTable _astToSymbolTable;
     private SymbolType _type = SymbolType.Method_Var;
+    private Boolean _isValid = true;
 
     public SymbolTableVisitor() {
         _classesSymbolTable = new HashMap<>();
@@ -243,6 +244,10 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
     @Override
     public void visit(MethodCallExpr e) {
+        if (e.ownerExpr() == null) {
+            _isValid = false;
+            return;
+        }
         _astToSymbolTable.addMapping(e, _symbolTableHierarchy.peek());
         e.ownerExpr().accept(this);
 
@@ -315,6 +320,8 @@ public class SymbolTableVisitor<IAstToSymbolTable> implements IVisitorWithField<
 
     @Override
     public IAstToSymbolTable getField() {
+        if (!_isValid)
+            return null;
         return (IAstToSymbolTable) _astToSymbolTable;
     }
 }
