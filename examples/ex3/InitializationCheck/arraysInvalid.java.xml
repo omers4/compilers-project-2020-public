@@ -74,10 +74,12 @@
                     <name>foo</name>
                     <formals/>
                     <vardecls>
-                        <type>
-                        <int-array/>
-                        </type>
-                        <name>theVar</name>
+                        <vardecl>
+                            <type>
+                            <int-array/>
+                            </type>
+                            <name>theVar</name>
+                        </vardecl>
                     </vardecls>
 
                     <body>
