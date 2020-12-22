@@ -48,7 +48,9 @@ public class Main {
                         IVisitorWithField<IAstToSymbolTable> symbolTableVisitor = new SymbolTableVisitor<>();
                         symbolTableVisitor.visit(prog);
                         var astToSymbolTable = symbolTableVisitor.getField();
-
+                        if(astToSymbolTable == null)
+                            throw new InvalidSemanticsException();
+                        
                         semanticCheckers.add(new TypeAnalysisVisitor(astToSymbolTable, hierarchy));
                         // Add more visitors
                         semanticCheckers.add(new IdentifierSemanticsVisitor(astToSymbolTable, hierarchy));

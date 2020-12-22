@@ -227,6 +227,21 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
             lastType = new RefType(curClass.name());
     }
 
+
+    private Collection<MethodDecl> getStaticTypeMethods(String staticType) {
+
+        List<MethodDecl> methods = new ArrayList<>();
+        var className = staticType;
+        while (className != null) {
+            ClassDecl classDecl = classInfo.getClassNode(className);
+            var classMethods = classDecl.methoddecls();
+            methods.addAll(classMethods);
+            className = classDecl.superName();
+        }
+
+        return  methods;
+    }
+
     @Override
     public void visit(MethodCallExpr e) {
         if (! (e.ownerExpr() instanceof NewObjectExpr || e.ownerExpr() instanceof ThisExpr ||
@@ -250,8 +265,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
         String ownerStaticType = ((RefType) lastType).id();
         isOwner = false;
 
-        ClassDecl classDecl = classInfo.getClassNode(ownerStaticType);
-        var classMethods = classDecl.methoddecls();
+        var classMethods = getStaticTypeMethods(ownerStaticType);
         if (valid && !classMethods.stream().map(MethodDecl::name).collect(Collectors.toList()).contains(e.methodId())) {
             valid = false;
             lastType = null;
