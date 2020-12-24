@@ -70,6 +70,14 @@ test NewClassValid IdentifierChecks
 
 test initbothifelsinvalid InitializationCheck
 test initonlywhileInvalid InitializationCheck
+test accessArrInvaild InitializationCheck
+test funcargInvalid InitializationCheck
+test ifbinarycondInvalid InitializationCheck
+test ownerInvalid InitializationCheck
+test returnInvalid InitializationCheck
+test rvInvalid InitializationCheck
+test sysoutInvalid InitializationCheck
+test arraysInvalid InitializationCheck
 
 test OwnerExprInvalid methodCall
 test OwnerExprValid methodCall
