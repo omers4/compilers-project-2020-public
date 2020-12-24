@@ -157,14 +157,23 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     public void visit(MethodDecl methodDecl) {
         methodDecl.returnType().accept(this);
 
-        if (valid && CheckForDuplicateValues(methodDecl.formals().stream()
-                .map(VariableIntroduction::name).collect(toList()))) {
+        var formal_names = methodDecl.formals().stream()
+                .map(VariableIntroduction::name).collect(toList());
+
+        if (valid && CheckForDuplicateValues(formal_names)) {
             this.valid = false;
             return;
         }
 
-        if (valid && CheckForDuplicateValues(methodDecl.vardecls().stream()
-                .map(VariableIntroduction::name).collect(toList()))) {
+        var var_names = methodDecl.vardecls().stream()
+                .map(VariableIntroduction::name).collect(toList());
+
+        if (valid && CheckForDuplicateValues(var_names)) {
+            this.valid = false;
+            return;
+        }
+
+        if (valid && ContainsDuplicateValues(formal_names, var_names)) {
             this.valid = false;
             return;
         }
