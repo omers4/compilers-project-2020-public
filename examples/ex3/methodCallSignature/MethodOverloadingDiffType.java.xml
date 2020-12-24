@@ -198,123 +198,13 @@
                         </formal>
                     </formals>
                     <vardecls>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>x</name>
-                        </vardecl>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <ref><id>B</id></ref>
-                            </type>
-                            <name>s</name>
-                        </vardecl>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <ref><id>B</id></ref>
-                            </type>
-                            <name>k</name>
-                        </vardecl>
                     </vardecls>
                     <body>
-                        <assign>
-                            <lv>s</lv>
-                            <rv>
-                                <new-object>
-                                    <classId>B</classId>
-                                </new-object>
-                            </rv>
-                        </assign>
-                        <assign>
-                            <lv>x</lv>
-                            <rv>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </rv>
-                        </assign>
-                        <assign>
-                            <lv>k</lv>
-                            <rv>
-                                <call>
-                                    <ownerExpr>
-                                        <ref-id>
-                                            <id>s</id>
-                                        </ref-id>
-                                    </ownerExpr>
-                                    <methodId>classRet</methodId>
-                                    <actuals>
-                                        <actual>
-                                            <ref-id>
-                                                <id>s</id>
-                                            </ref-id>
-                                        </actual>
-                                        <actual>
-                                            <ref-id>
-                                                <id>x</id>
-                                            </ref-id>
-                                        </actual>
-                                    </actuals>
-                                </call>
-                            </rv>
-                        </assign>
                     </body>
                     <ret>
                         <ref-id>
-                            <id>s</id>
+                            <id>m</id>
                         </ref-id>
-                    </ret>
-                </methoddecl>
-                <methoddecl>
-                    <lineNumber>20</lineNumber>
-                    <returnType>
-                        <int/>
-                    </returnType>
-                    <name>other</name>
-
-                    <formals>  <formal>
-                        <lineNumber>18</lineNumber>
-                        <type>
-                            <int/>
-                        </type>
-                        <name>ss</name>
-                    </formal></formals>
-                    <vardecls>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>ss</name>
-                        </vardecl>
-                    </vardecls>
-                    <body>
-                        <assign>
-                            <lv>ss</lv>
-                            <rv>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </rv>
-                        </assign>
-                    </body>
-                    <ret>
-                        <subtract>
-                            <e1>
-                                <ref-id>
-                                    <id>ss</id>
-                                </ref-id>
-                            </e1>
-                            <e2>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </e2>
-                        </subtract>
                     </ret>
                 </methoddecl>
                 <methoddecl>
@@ -384,54 +274,6 @@
             <name>C</name>
             <fields></fields>
             <methoddecls>
-                <methoddecl>
-                    <lineNumber>20</lineNumber>
-                    <returnType>
-                        <int/>
-                    </returnType>
-                    <name>other</name>
-
-                    <formals>  <formal>
-                        <lineNumber>18</lineNumber>
-                        <type>
-                            <int/>
-                        </type>
-                        <name>ss</name>
-                    </formal></formals>
-                    <vardecls>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>ss</name>
-                        </vardecl>
-                    </vardecls>
-                    <body>
-                        <assign>
-                            <lv>ss</lv>
-                            <rv>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </rv>
-                        </assign>
-                    </body>
-                    <ret>
-                        <subtract>
-                            <e1>
-                                <ref-id>
-                                    <id>ss</id>
-                                </ref-id>
-                            </e1>
-                            <e2>
-                                <int-literal>
-                                    <num>1</num>
-                                </int-literal>
-                            </e2>
-                        </subtract>
-                    </ret>
-                </methoddecl>
                 <methoddecl>
                     <lineNumber>15</lineNumber>
                     <returnType>
