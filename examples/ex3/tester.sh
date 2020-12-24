@@ -99,7 +99,6 @@ test MethodDoesNotExist methodCallSignature
 test MethodOverrideValid methodCallSignature
 test MethodOverloadingDiffType methodCallSignature
 test MethodOverloadingExtraParam methodCallSignature
-test MethodCallWrongActual methodCallSignature
 test MethodCallWrongActual2 methodCallSignature
 
 
