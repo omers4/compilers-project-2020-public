@@ -12,12 +12,6 @@ class Example {
         return x + x;
     }
 
-    public int other(int y) {
-        int x;
-        x = 1;
-        return x - 1;
-    }
-
     public Example classRet(Example m, int k) {
         int x;
         x = 1;
@@ -28,13 +22,7 @@ class Example {
 class B extends Example{
 
     public Example classRet(C m, int k) {
-        int x;
-        B s;
-        Example k;
-        x = 1;
-        s = new B();
-        k = s.classRet(s,x);
-        return s;
+        return m;
     }
 
     public void test() {
@@ -52,11 +40,6 @@ class B extends Example{
         return x + x;
     }
 
-    public int other(int ss) {
-        int ss;
-        ss = 1;
-        return ss - 1;
-    }
 }
 
 class C extends B{
@@ -64,12 +47,6 @@ class C extends B{
     public int run() {
         x = 2;
         return x + x;
-    }
-
-    public int other(int m) {
-        int ss;
-        ss = 1;
-        return ss - 1;
     }
 
     public void C_Test() {
