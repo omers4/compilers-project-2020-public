@@ -100,6 +100,7 @@ test MethodOverrideValid methodCallSignature
 test MethodOverloadingDiffType methodCallSignature
 test MethodOverloadingExtraParam methodCallSignature
 test MethodCallWrongActual2 methodCallSignature
+test formalVarSameName methodCallSignature
 
 
 test arrayNameInvalid varDeclarationChecks
