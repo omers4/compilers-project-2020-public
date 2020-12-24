@@ -212,13 +212,6 @@
                             </type>
                             <name>s</name>
                         </vardecl>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <ref><id>Example</id></ref>
-                            </type>
-                            <name>k</name>
-                        </vardecl>
                     </vardecls>
                     <body>
                         <assign>
@@ -238,7 +231,7 @@
                             </rv>
                         </assign>
                         <assign>
-                            <lv>k</lv>
+                            <lv>m</lv>
                             <rv>
                                 <call>
                                     <ownerExpr>
@@ -284,13 +277,6 @@
                         <name>ss</name>
                     </formal></formals>
                     <vardecls>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>ss</name>
-                        </vardecl>
                     </vardecls>
                     <body>
                         <assign>
@@ -399,13 +385,6 @@
                         <name>ss</name>
                     </formal></formals>
                     <vardecls>
-                        <vardecl>
-                            <lineNumber>17</lineNumber>
-                            <type>
-                                <int/>
-                            </type>
-                            <name>ss</name>
-                        </vardecl>
                     </vardecls>
                     <body>
                         <assign>
