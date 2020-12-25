@@ -194,41 +194,46 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
     }
 
     public Boolean isValidMethodUsage(List<Expr> actuals, List<FormalArg> args) {
-
-        if(actuals.size() != args.size())
-            return false;
-
-        for (int i = 0; i < actuals.size(); i++) {
-            actuals.get(i).accept(this);
-            AstType actualType = lastType;
-
-            // TODO: need to check that accepting this new formal wont affect the progeam
-            args.get(i).accept(this);
-            AstType formalType = lastType;
-
-            if (actualType.equals(formalType))
-                continue;
-
-            if (!(actualType instanceof RefType && formalType instanceof RefType)) {
+        try {
+            if(actuals.size() != args.size())
                 return false;
-            }
 
-            var formalTypeId = ((RefType) formalType).id();
-            var superName = classInfo.getClassNode(((RefType) actualType).id()).superName();
+            for (int i = 0; i < actuals.size(); i++) {
+                actuals.get(i).accept(this);
+                AstType actualType = lastType;
 
-            while (superName != null) {
-                if (superName.equals(formalTypeId)) {
-                    break;
+                // TODO: need to check that accepting this new formal wont affect the progeam
+                args.get(i).accept(this);
+                AstType formalType = lastType;
+
+                if (actualType.equals(formalType))
+                    continue;
+
+                if (!(actualType instanceof RefType && formalType instanceof RefType)) {
+                    return false;
                 }
-                superName = classInfo.getClassNode(superName).superName();
+
+                var formalTypeId = ((RefType) formalType).id();
+                var superName = classInfo.getClassNode(((RefType) actualType).id()).superName();
+
+                while (superName != null) {
+                    if (superName.equals(formalTypeId)) {
+                        break;
+                    }
+                    superName = classInfo.getClassNode(superName).superName();
+                }
+
+                if (superName == null)
+                    return false;
+
             }
 
-            if (superName == null)
-                return false;
-
+            return true;
+        }
+        catch (Exception e) {
+            return false;
         }
 
-        return true;
     }
 
     @Override
