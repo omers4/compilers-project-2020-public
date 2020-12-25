@@ -72,7 +72,7 @@ public class TypeAnalysisVisitor extends ClassSemanticsVisitor {
                 if (!AreFormalsTheSame(method.formals(), superMethod.formals()))
                     return true;
                 if(!isSubTypeOf(method.returnType(), superMethod.returnType())) {
-                    return false;
+                    return true;
                 }
 
             }
