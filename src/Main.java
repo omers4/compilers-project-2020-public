@@ -50,10 +50,9 @@ public class Main {
                         var astToSymbolTable = symbolTableVisitor.getField();
                         if(astToSymbolTable == null)
                             throw new InvalidSemanticsException();
-                        
+                        semanticCheckers.add(new IdentifierSemanticsVisitor(astToSymbolTable, hierarchy));
                         semanticCheckers.add(new TypeAnalysisVisitor(astToSymbolTable, hierarchy));
                         // Add more visitors
-                        semanticCheckers.add(new IdentifierSemanticsVisitor(astToSymbolTable, hierarchy));
                         semanticCheckers.add(new InitializationCheckVisitor(astToSymbolTable, hierarchy));
 
                         for(ClassSemanticsVisitor visitor : semanticCheckers) {

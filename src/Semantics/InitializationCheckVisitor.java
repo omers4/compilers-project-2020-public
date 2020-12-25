@@ -26,6 +26,8 @@ public class InitializationCheckVisitor  extends ClassSemanticsVisitor{
 
     public InitializationCheckVisitor(IAstToSymbolTable symbolTable, ClassHierarchyForest hierarchy) {
         super(symbolTable, hierarchy);
+        localVars = new HashSet<>();
+        InitializedVars = new HashSet<>();
         ThenInitializedVars = new HashSet<>();
         ElseInitializedVars = new HashSet<>();
         WhileInitializedVars = new HashSet<>();
