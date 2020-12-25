@@ -43,8 +43,10 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
         var tempForest = new LinkedList<ClassTree>();
         List<String> classNames = new ArrayList<>();
 
+        String mainClassName = program.mainClass().name();
+
         for (ClassDecl classDecl : program.classDecls()) {
-            if (classNames.contains(classDecl.name())) {
+            if (classDecl.name().equals(mainClassName) || classNames.contains(classDecl.name())) {
                 throw new InvalidSemanticsException(); // Refrain from duplicated class names
             }
             tempForest.add(new ClassTree(classDecl));
@@ -56,7 +58,7 @@ public class ClassHierarchyForest implements IClassHierarchyForest {
             tree = tempForest.pop();
             String superName = tree.getClassDecl().superName();
             if (superName != null) {
-                if (!classNames.contains(superName) || superName.equals(tree.getClassDecl().name()) ||
+                if (superName.equals(mainClassName) || !classNames.contains(superName) || superName.equals(tree.getClassDecl().name()) ||
                         classNames.indexOf(tree.getClassDecl().name()) < classNames.indexOf(superName)) {
                     throw new InvalidSemanticsException(); // Cyclic, bad or self inheritance
                 }
