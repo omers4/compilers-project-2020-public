@@ -2,6 +2,14 @@ Welcome to the compiler project 2020 starter kit!
 
 === Structure ===
 
+cd src
+Jflex generate:
+java -jar ../tools/JFlex.jar jflex/Scanner.jflex -d .
+Cup generate:
+java -jar ../tools/java-cup-11b.jar -parser Parser cup/Parser.cup
+ex4:
+mjavac.jar parse marshal examples/ast/TreeVisitor.java out.java.xml
+
 build.xml
 	(directives for compiling the project using 'ant')
 
