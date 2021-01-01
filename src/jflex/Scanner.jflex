@@ -1,5 +1,5 @@
 /***************************/
-/* FILE NAME: LEX_FILE.lex */
+/* Based on a template by Oren Ish-Shalom */
 /***************************/
 
 /*************/
@@ -63,6 +63,12 @@ import java_cup.runtime.*;
 /***********************/
 /* MACRO DECALARATIONS */
 /***********************/
+LineTerminator	= \r|\n|\r\n
+WhiteSpace		= [\t ] | {LineTerminator}
+INTEGER			= 0 | [1-9][0-9]*
+ID				= [a-zA-Z][a-zA-Z0-9_]*
+MultilineComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+SingleLineComment     = "//" [^\r\n]* {LineTerminator}?
 
 /******************************/
 /* DOLAR DOLAR - DON'T TOUCH! */
@@ -82,5 +88,43 @@ import java_cup.runtime.*;
 
 <YYINITIAL> {
 "public"            { return symbol(sym.PUBLIC); }
+"static"            { return symbol(sym.STATIC); }
+"void"            { return symbol(sym.VOID); }
+"class"            { return symbol(sym.CLASS); }
+"int"            { return symbol(sym.INT); }
+"String"            { return symbol(sym.STRING); }
+"boolean"            { return symbol(sym.BOOLEAN); }
+","			   { return symbol(sym.COMMA); }
+";"			   { return symbol(sym.SEMICOLON); }
+"+"            { return symbol(sym.PLUS); }
+"-"            { return symbol(sym.MINUS); }
+"*"            { return symbol(sym.MULT); }
+"<"            { return symbol(sym.LT); }
+"!"            { return symbol(sym.NOT); }
+"&&"            { return symbol(sym.AND); }
+"("            { return symbol(sym.LPAREN); }
+")"            { return symbol(sym.RPAREN); }
+"{"            { return symbol(sym.LCURLY_BRACK); }
+"}"            { return symbol(sym.RCURLY_BRACK); }
+"["            { return symbol(sym.LSQUARE_BRACK); }
+"]"            { return symbol(sym.RSQUARE_BRACK); }
+"="            { return symbol(sym.ASSIGN); }
+"."            { return symbol(sym.DOT); }
+"true"            { return symbol(sym.TRUE); }
+"false"            { return symbol(sym.FALSE); }
+"if"            { return symbol(sym.IF); }
+"else"            { return symbol(sym.ELSE); }
+"while"            { return symbol(sym.WHILE); }
+"length"            { return symbol(sym.LENGTH); }
+"new"            { return symbol(sym.NEW); }
+"this"            { return symbol(sym.THIS); }
+"return"            { return symbol(sym.RETURN); }
+"extends"            { return symbol(sym.EXTENDS); }
+"System.out.println"            { return symbol(sym.PRINT_FUNC); }
+{ID}		   { return symbol(sym.IDENTIFIER, new String(yytext())); }
+{INTEGER}      { return symbol(sym.INTEGER_LITERAL, Integer.parseInt(yytext())); }
+{WhiteSpace}   { /* do nothing */ }
+{MultilineComment}    { /* do nothing */ }
+{SingleLineComment}    { /* do nothing */ }
 <<EOF>>				{ return symbol(sym.EOF); }
 }

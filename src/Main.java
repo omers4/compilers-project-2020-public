@@ -21,6 +21,15 @@ public class Main {
 
             if (inputMethod.equals("parse")) {
                 FileReader fileReader = new FileReader(new File(filename));
+
+                // Debug to see all tokens the lexer is producing
+//                var x = new Parser(new Lexer(fileReader));
+//                int i = 0;
+//                while (i<2000) {
+//                    x.scan();
+//                    i++;
+//                }
+
                 Parser p = new Parser(new Lexer(fileReader));
                 prog = (Program) p.parse().value;
 

@@ -1,4 +1,9 @@
 /*************/
+/* Based on a template by Oren Ish-Shalom */
+/*************/
+
+
+/*************/
 /* IMPORTS */
 /*************/
 
@@ -16,15 +21,11 @@ parser code
 		super(lexer);
 		this.lexer = lexer;
 	}
+
+	// Override default error reporting in parser
 	public void report_error(String message, Object info)
 	{
-    System.out.print("Syntax error at line " + lexer.getLine() + " of input\n");
-		// System.out.print("ERROR >> ");
-		// System.out.print("[");
-		// System.out.print(lexer.getLine());
-		// System.out.print(":");
-		// System.out.print(lexer.getCharPos());
-		// System.out.print("] ");
+	    System.err.print("Syntax error at line " + lexer.getLine() + " of input.\n");
 		System.exit(1);
 	}
 :}
@@ -35,28 +36,48 @@ parser code
 scan with
 {:
 	Symbol s;
+    try {
 	s = lexer.next_token();
-	// System.out.print(s.sym);
-	// System.out.print("[");
-	// System.out.print(lexer.getLine());
-	// System.out.print(":");
-	// System.out.print(lexer.getCharPos());
-	// System.out.print("] ");
-	// System.out.print(sym.terminalNames[s.sym]);
-	// if (s.value != null)
-	// {
-	//	System.out.print("( ");
-	//	System.out.print(s.value);
-	//	System.out.print(" )");
-	// }
-	// System.out.print("\n");
+	System.out.print(s.sym);
+	System.out.print("[");
+	System.out.print(lexer.getLine());
+	System.out.print(":");
+	System.out.print(lexer.getCharPos());
+	System.out.print("] ");
+	System.out.print(sym.terminalNames[s.sym]);
+	if (s.value != null)
+	{
+	System.out.print("( ");
+	System.out.print(s.value);
+	System.out.print(" )");
+	}
+	System.out.print("\n");
 	return s;
+     } catch (java.lang.Error e) {
+         System.err.print("Syntax error at line " + lexer.getLine() + " of input. Lexer\n");
+         System.exit(1);
+         return null;
+     }
 :};
 
 /*************/
 /* TERMINALS */
 /*************/
-terminal PUBLIC;
+terminal PUBLIC, STATIC, VOID;
+terminal CLASS, EXTENDS;
+terminal STRING, INT, BOOLEAN;
+terminal NEW, THIS, RETURN;
+terminal IF, ELSE, WHILE;
+terminal ASSIGN;
+terminal LENGTH;
+terminal LT, NOT, AND;
+terminal TRUE, FALSE;
+terminal PLUS, MINUS, MULT;
+terminal LPAREN, RPAREN, LCURLY_BRACK, RCURLY_BRACK, LSQUARE_BRACK, RSQUARE_BRACK;
+terminal PRINT_FUNC;
+terminal int INTEGER_LITERAL;
+terminal String IDENTIFIER;
+terminal COMMA, SEMICOLON, DOT;
 
 /*****************/
 /* NON TERMINALS */
