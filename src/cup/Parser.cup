@@ -161,7 +161,7 @@ MethodDeclList  ::=
             {: RESULT = l; l.add(m); :};
 
 MethodDecl      ::= PUBLIC:p Type:t Identifier:i FormalParameterListAndParens:params LCURLY_BRACK VarDeclarationList:vars StatementList:stmts RETURN Expression:rv SEMICOLON RCURLY_BRACK
-            {: RESULT = new MethodDecl(t, i, params, vars, stmts, rv, null); :}; /*TODO: line number null?*/
+            {: RESULT = new MethodDecl(t, i, params, vars, stmts, rv, pleft); :};
 
 Statement       ::= Identifier:id ASSIGN Expression:expr SEMICOLON
                 {: RESULT = new AssignStatement(id, expr); :}
@@ -177,7 +177,7 @@ Statement       ::= Identifier:id ASSIGN Expression:expr SEMICOLON
                     {: RESULT = new BlockStatement(s); :};
 
 Identifier      ::= IDENTIFIER:id
-                {: RESULT = id; :}; /*TODO: need identifier which extends AstNode?*/
+                {: RESULT = id; :};
 
 Expression      ::= IDENTIFIER:name
             {: RESULT = new IdentifierExpr(name); :}
@@ -212,7 +212,7 @@ Expression      ::= IDENTIFIER:name
         | Expression:e DOT Identifier:id MethodInvocationParameterList:l
             {: RESULT = new MethodCallExpr(e, id, l); :}
         | INTEGER_LITERAL:i
-            {: RESULT = new IntegerLiteralExpr(i); :}; /*TODO: check how to get value of i?*/
+            {: RESULT = new IntegerLiteralExpr(i); :};
 
 ArrayLength     ::= Expression:e DOT LENGTH
             {: RESULT = new ArrayLengthExpr(e); :};
@@ -225,12 +225,12 @@ Type            ::= INT:i
         | BOOLEAN:b
             {: RESULT = new BoolAstType(); :}
         | Identifier:i
-            {: RESULT = new RefType(i); :} /*TODO: check how to get value of i?*/
+            {: RESULT = new RefType(i); :}
         | INT:i LSQUARE_BRACK RSQUARE_BRACK
             {: RESULT = new IntArrayAstType(); :};
 
 VarDeclaration  ::= Type:t Identifier:i SEMICOLON
-            {: RESULT = new VarDecl(t, i, null); :}; /*TODO: line number null?*/
+            {: RESULT = new VarDecl(t, i, tleft); :};
 
 VarDeclarationList ::=
             {: RESULT = new LinkedList<VarDecl>(); :}
@@ -238,7 +238,7 @@ VarDeclarationList ::=
             {: RESULT = l; l.add(e); :};
 
 FormalParameter     ::= Type:t Identifier:i
-            {: RESULT = new FormalArg(t, i, null); :};  /*TODO: line number null?*/
+            {: RESULT = new FormalArg(t, i, tleft); :};
 
 FormalParameterListAndParens ::= LPAREN:l RPAREN
             {: RESULT = new LinkedList<FormalArg>(); :}
