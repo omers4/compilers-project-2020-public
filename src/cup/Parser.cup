@@ -63,7 +63,7 @@ scan with
 /*************/
 /* TERMINALS */
 /*************/
-terminal PUBLIC, STATIC, VOID;
+terminal PUBLIC, STATIC, VOID, MAIN;
 terminal CLASS, EXTENDS;
 terminal STRING, INT, BOOLEAN;
 terminal NEW, THIS, RETURN;
@@ -78,7 +78,6 @@ terminal PRINT_FUNC;
 terminal int INTEGER_LITERAL;
 terminal String IDENTIFIER;
 terminal COMMA, SEMICOLON, DOT;
-terminal EOF;
 
 /*****************/
 /* NON TERMINALS */
@@ -108,9 +107,9 @@ non terminal Expr Expression;
 non terminal LinkedList<Expr> ExpressionList;
 non terminal LinkedList<Expr> MethodInvocationParameterList;
 
-non terminal Identifier Identifier;
+non terminal String Identifier;
 
-non terminal Type Type;
+non terminal AstType Type;
 
 non terminal ArrayLengthExpr ArrayLength;
 non terminal ArrayAccessExpr ArrayAccess;
@@ -136,7 +135,7 @@ start with Program;
 /* PRODUCTION RULES */
 /********************/
 
-Program         ::= MainClass:m ClassDeclList:c EOF {: RESULT = new Program(m, c); :};
+Program         ::= MainClass:m ClassDeclList:c {: RESULT = new Program(m, c); :};
 
 StatementList   ::= Statement:s StatementList:l
             {: l.add(s); RESULT = l; :}
@@ -149,7 +148,7 @@ MainClass       ::= CLASS:c Identifier:id LCURLY_BRACK PUBLIC STATIC VOID MAIN L
 ClassDecl       ::= CLASS Identifier:i LCURLY_BRACK VarDeclarationList:v MethodDeclList:m RCURLY_BRACK
             {: RESULT = new ClassDecl(i, null , v, m); :}  /*TODO: parent null?*/
         | CLASS Identifier:i EXTENDS Identifier:parent LCURLY_BRACK VarDeclarationList:v MethodDeclList:m RCURLY_BRACK
-            {: RESULT = new ClassDeclExtends(i, parent, v, m); :};
+            {: RESULT = new ClassDecl(i, parent, v, m); :};
 
 ClassDeclList   ::=
             {: RESULT = new LinkedList<ClassDecl>(); :}
@@ -178,7 +177,7 @@ Statement       ::= Identifier:id ASSIGN Expression:expr SEMICOLON
                     {: RESULT = new BlockStatement(s); :};
 
 Identifier      ::= IDENTIFIER:id
-                {: RESULT = new IdentifierExpr(id); :}; /*TODO: need identifier which extends AstNode?*/
+                {: RESULT = id; :}; /*TODO: need identifier which extends AstNode?*/
 
 Expression      ::= IDENTIFIER:name
             {: RESULT = new IdentifierExpr(name); :}
@@ -213,7 +212,7 @@ Expression      ::= IDENTIFIER:name
         | Expression:e DOT Identifier:id MethodInvocationParameterList:l
             {: RESULT = new MethodCallExpr(e, id, l); :}
         | INTEGER_LITERAL:i
-            {: RESULT = new IntegerLiteralExpr(i.intValue()); :}; /*TODO: check how to get value of i?*/
+            {: RESULT = new IntegerLiteralExpr(i); :}; /*TODO: check how to get value of i?*/
 
 ArrayLength     ::= Expression:e DOT LENGTH
             {: RESULT = new ArrayLengthExpr(e); :};
@@ -226,7 +225,7 @@ Type            ::= INT:i
         | BOOLEAN:b
             {: RESULT = new BoolAstType(); :}
         | Identifier:i
-            {: RESULT = new RefType(i.s); :} /*TODO: check how to get value of i?*/
+            {: RESULT = new RefType(i); :} /*TODO: check how to get value of i?*/
         | INT:i LSQUARE_BRACK RSQUARE_BRACK
             {: RESULT = new IntArrayAstType(); :};
 

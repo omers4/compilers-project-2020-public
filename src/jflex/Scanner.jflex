@@ -90,6 +90,7 @@ SingleLineComment     = "//" [^\r\n]* {LineTerminator}?
 "public"            { return symbol(sym.PUBLIC); }
 "static"            { return symbol(sym.STATIC); }
 "void"            { return symbol(sym.VOID); }
+"main"              { return symbol(sym.MAIN); }
 "class"            { return symbol(sym.CLASS); }
 "int"            { return symbol(sym.INT); }
 "String"            { return symbol(sym.STRING); }
