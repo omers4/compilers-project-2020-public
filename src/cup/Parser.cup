@@ -138,7 +138,7 @@ start with Program;
 Program         ::= MainClass:m ClassDeclList:c {: RESULT = new Program(m, c); :};
 
 StatementList   ::= Statement:s StatementList:l
-            {: l.add(s); RESULT = l; :}
+            {: l.addFirst(s); RESULT = l; :}
         |
             {: RESULT = new LinkedList<Statement>(); :};
 
@@ -153,12 +153,12 @@ ClassDecl       ::= CLASS Identifier:i LCURLY_BRACK VarDeclarationList:v MethodD
 ClassDeclList   ::=
             {: RESULT = new LinkedList<ClassDecl>(); :}
         | ClassDecl:c ClassDeclList:l
-            {: RESULT = l; l.add(c); :};
+            {: l.addFirst(c); RESULT = l; :};
 
 MethodDeclList  ::=
             {: RESULT = new LinkedList<MethodDecl>(); :}
         | MethodDecl:m MethodDeclList:l
-            {: RESULT = l; l.add(m); :};
+            {: l.addFirst(m); RESULT = l; :};
 
 MethodDecl      ::= PUBLIC:p Type:t Identifier:i FormalParameterListAndParens:params LCURLY_BRACK VarDeclarationList:vars StatementList:stmts RETURN Expression:rv SEMICOLON RCURLY_BRACK
             {: RESULT = new MethodDecl(t, i, params, vars, stmts, rv, pleft); :};
@@ -246,7 +246,7 @@ FormalParameterListAndParens ::= LPAREN:l RPAREN
             {: RESULT = params; :};
 
 FormalParameterList ::= FormalParameter:p COMMA FormalParameterList:l
-            {: RESULT = l; l.add(p); :}
+            {: l.addFirst(p); RESULT = l;  :}
         | FormalParameter:p
             {: RESULT = new LinkedList<FormalArg>(); RESULT.add(p); :};
 
@@ -259,4 +259,4 @@ MethodInvocationParameterList ::= LPAREN:l RPAREN
 ExpressionList ::= Expression:e
             {: RESULT = new LinkedList<Expr>(); RESULT.add(e); :}
         | Expression:e COMMA ExpressionList:l
-            {: RESULT = l; RESULT.add(e); :};
+            {: l.addFirst(e); RESULT = l; :};
