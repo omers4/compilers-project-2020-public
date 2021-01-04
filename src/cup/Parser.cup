@@ -78,6 +78,7 @@ terminal PRINT_FUNC;
 terminal int INTEGER_LITERAL;
 terminal String IDENTIFIER;
 terminal COMMA, SEMICOLON, DOT;
+terminal EOF;
 
 /*****************/
 /* NON TERMINALS */
@@ -133,7 +134,7 @@ start with Program;
 /* PRODUCTION RULES */
 /********************/
 
-Program         ::= MainClass:m ClassDeclList:c {: RESULT = new Program(m, c); :};
+Program         ::= MainClass:m ClassDeclList:c EOF {: RESULT = new Program(m, c); :};
 
 StatementList   ::= Statement:s StatementList:l
             {: l.add(s); RESULT = l; :}
