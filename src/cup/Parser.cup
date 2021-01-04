@@ -218,43 +218,43 @@ ArrayLength     ::= Expression:e DOT LENGTH
 ArrayAccess     ::= Expression:e LSQUARE_BRACK Expression:i RSQUARE_BRACK
             {: RESULT = new ArrayAccessExpr(e, i); :};
 
-Type            ::= INTEGER_TYPE:i
-            {: RESULT = new IntegerType(ileft); :}
-        | BOOLEAN_TYPE:b
-            {: RESULT = new BooleanType(bleft); :}
+Type            ::= INT:i
+            {: RESULT = new IntAstType(); :}
+        | BOOLEAN:b
+            {: RESULT = new BoolAstType(); :}
         | Identifier:i
-            {: RESULT = new IdentifierType(i.s, ileft); :}
-        | INTEGER_TYPE:i LBRACKET RBRACKET
-            {: RESULT = new IntArrayType(ileft); :};
+            {: RESULT = new RefType(i.s); :} /*TODO: check how to get value of i?*/
+        | INT:i LSQUARE_BRACK RSQUARE_BRACK
+            {: RESULT = new IntArrayAstType(); :};
 
 VarDeclaration  ::= Type:t Identifier:i SEMICOLON
-            {: RESULT = new VarDecl(t, i, tleft); :};
+            {: RESULT = new VarDecl(t, i, null); :}; /*TODO: line number null?*/
 
 VarDeclarationList ::=
-            {: RESULT = new VarDeclList(0); :}
+            {: RESULT = new LinkedList<VarDecl>(); :}
         | VarDeclarationList:l VarDeclaration:e
-            {: RESULT = l; l.addElement(e); :};
+            {: RESULT = l; l.add(e); :};
 
-FormalParameter ::= Type:t Identifier:i
-            {: RESULT = new Formal(t, i, tleft); :};
+FormalParameter     ::= Type:t Identifier:i
+            {: RESULT = new FormalArg(t, i, null); :};  /*TODO: line number null?*/
 
 FormalParameterListAndParens ::= LPAREN:l RPAREN
-            {: RESULT = new FormalList(lleft); :}
+            {: RESULT = new LinkedList<FormalArg>(); :}
         | LPAREN FormalParameterList:params RPAREN
             {: RESULT = params; :};
 
 FormalParameterList ::= FormalParameter:p COMMA FormalParameterList:l
-            {: RESULT = l; l.addElement(p); :}
+            {: RESULT = l; l.add(p); :}
         | FormalParameter:p
-            {: RESULT = new FormalList(pleft); RESULT.addElement(p); :};
+            {: RESULT = new LinkedList<FormalArg>(); RESULT.add(p); :};
 
 MethodInvocationParameterList ::= LPAREN:l RPAREN
-            {: RESULT = new ExpList(lleft); :}
+            {: RESULT = new LinkedList<Expr>(); :}
         | LPAREN:l ExpressionList:e RPAREN
             {: RESULT = e; :}
         ;
 
 ExpressionList ::= Expression:e
-            {: RESULT = new ExpList(eleft); RESULT.addElement(e); :}
+            {: RESULT = new LinkedList<Expr>(); RESULT.add(e); :}
         | Expression:e COMMA ExpressionList:l
-            {: RESULT = l; RESULT.addElement(e); :};
+            {: RESULT = l; RESULT.add(e); :};
