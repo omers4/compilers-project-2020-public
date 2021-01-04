@@ -119,9 +119,11 @@ non terminal ArrayAccessExpr ArrayAccess;
 /* OPERATOR PRECEDENCE */
 /***********************/
 
-precedence left PLUS, MINUS, MULT
-precedence left LT, AND
-precedence left LPAREN, RPAREN, LCURLY_BRACK, RCURLY_BRACK, LSQUARE_BRACK, RSQUARE_BRACK;
+precedence nonassoc ASSIGN;
+precedence nonassoc AND;
+precedence left LT;
+precedence left PLUS, MINUS;
+precedence left MULT;
 precedence right NOT, NEW;
 precedence left DOT;
 
